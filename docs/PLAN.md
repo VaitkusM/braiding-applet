@@ -1,3 +1,8 @@
+> **Status (2026-09-25): implemented.** The final design is documented in `docs/ARCHITECTURE.md`
+> and `docs/THEORY.md`. Additions beyond this plan: obstacle "contact jumps" (a free yarn
+> catching on a bulge ahead of the fell point), a sample-count memory guard, and a pixel-level
+> recolouring check in the smoke test.
+
 # Plan — Braiding Applet (3D circular-braiding / mandrel differential-geometry explorer)
 
 ## Context
