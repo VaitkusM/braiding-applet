@@ -1,0 +1,19 @@
+{
+  "tasks": {
+    "test": "deno test --allow-read tests/",
+    "serve": "deno run --allow-net --allow-read --allow-sys jsr:@std/http@1/file-server --port 8000 --host 127.0.0.1 .",
+    "smoke": "deno run --allow-all tools/smoke.js",
+    "check": "deno lint && deno fmt --check && deno task test"
+  },
+  "lint": {
+    "rules": {
+      "exclude": ["no-window", "no-window-prefix"]
+    }
+  },
+  "fmt": {
+    "lineWidth": 100,
+    "proseWrap": "preserve",
+    "exclude": ["tasks.md", "docs/PLAN.md"]
+  },
+  "exclude": ["_site/", "screenshots/"]
+}

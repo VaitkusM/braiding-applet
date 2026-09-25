@@ -1,0 +1,9 @@
+# OS / editor noise
+.DS_Store
+.vscode/
+.idea/
+
+# Local build / smoke-test output (never deployed)
+_site/
+screenshots/
+*.log

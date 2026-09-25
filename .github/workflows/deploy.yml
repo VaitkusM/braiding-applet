@@ -1,0 +1,54 @@
+# CI + deployment.
+#  - `check`: lint, formatting and unit tests of the pure core (src/core) with Deno.
+#  - `deploy`: copies the static site (no build step) into _site/ and publishes it to GitHub Pages.
+name: Check and deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: denoland/setup-deno@v2.0.5
+        with:
+          deno-version: v2.6.10
+      - run: deno lint
+      - run: deno fmt --check
+      - run: deno task test
+
+  deploy:
+    needs: check
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v6
+      - name: Assemble static site (only the files the page needs)
+        run: |
+          mkdir _site
+          cp index.html _site/
+          cp -r src styles assets _site/
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v5
