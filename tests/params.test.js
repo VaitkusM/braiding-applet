@@ -46,3 +46,44 @@ Deno.test("params: SI conversion and URL-hash round trip", () => {
   assert(JSON.stringify(back) === JSON.stringify(p), "round trip");
   assert(decodeParams("not-base64!!") === null, "garbage → null");
 });
+
+Deno.test("params: invalid numbers and hostile share links are rejected, never crash", () => {
+  for (
+    const [key, bad] of [["dsMaxMm", 0], ["dsMaxMm", -1], ["tensionN", 0], ["rpm", NaN], [
+      "axialWidthMm",
+      0,
+    ], ["tiltDeg", 45]]
+  ) {
+    const p = defaultParams();
+    p[key] = bad;
+    assert(validateParams(p).errors.length > 0, `${key} = ${bad} must be rejected`);
+  }
+  const p = defaultParams();
+  p.pattern = "toString"; // inherited key must not pass
+  const v = validateParams(p);
+  assert(p.pattern === "regular" && v.fixes.length > 0, "unknown pattern repaired");
+  const q = defaultParams();
+  q.mandrel = "custom";
+  q.shapes.custom.points[3] = [0.5, NaN];
+  assert(validateParams(q).errors.length > 0, "NaN control point rejected");
+  // JSON with 1e999 (→ Infinity) or inherited keys decodes to safe values.
+  const b64 = (o) =>
+    btoa(JSON.stringify(o)).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+  const d = decodeParams(b64({ rpm: 1e999, pattern: "toString" }));
+  assert(
+    d === null || (Number.isFinite(d.rpm) && d.pattern !== "toString"),
+    "hostile hash sanitised",
+  );
+  const e = decodeParams(b64({ rpm: 1e999 }));
+  assert(e !== null && e.rpm === defaultParams().rpm, "non-finite number ignored");
+});
+
+Deno.test("params: memory guard refuses runs with tens of millions of samples", () => {
+  const p = defaultParams();
+  p.carriers = 144;
+  p.rpm = 30;
+  p.takeUpMm = 1;
+  const v = validateParams(p);
+  assert(v.errors.some((m) => m.includes("million")), v.errors.join(" "));
+  assert(validateParams(defaultParams()).errors.length === 0, "defaults unaffected");
+});

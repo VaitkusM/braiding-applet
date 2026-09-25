@@ -144,7 +144,9 @@ export class OverlayView {
     }
     this.clairaut = f.r * Math.sin(y.alpha[i]);
 
-    // Geodesic (recomputed a few times per second).
+    // Geodesic (recomputed a few times per second). A yarn still at its tie point has no
+    // direction yet: hide the previous yarn's geodesic.
+    if (this.geoLine && (i === 0 || !Number.isFinite(y.alpha[i]))) this.geoLine.visible = false;
     if (
       this.show.geodesic && sim.time - this.geoTime > 0.2 && Number.isFinite(y.alpha[i]) && i > 0
     ) {

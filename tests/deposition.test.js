@@ -256,3 +256,17 @@ Deno.test("deposition: triaxial axial yarns lie on meridians and follow the fell
     assertClose(y.zp[y.last], sim.solvers[0].z, sim.config.dsMax + 1e-9, "reaches the fell line");
   }
 });
+
+Deno.test("deposition: flag statistics do not depend on the symmetry reduction", () => {
+  const prof = { kind: "cone", length: 0.8, r0: 0.02, r1: 0.1 };
+  const a = new Simulation(config({ profile: prof, takeUp: 0.02, friction: 0.05 }));
+  const b = new Simulation(
+    config({ profile: prof, takeUp: 0.02, friction: 0.05, forceGeneral: true }),
+  );
+  a.advance(6);
+  b.advance(6);
+  assert(a.stats.slip > 0, "slip occurs");
+  for (const key of Object.keys(a.stats)) {
+    assert(a.stats[key] === b.stats[key], `${key}: ${a.stats[key]} vs ${b.stats[key]}`);
+  }
+});

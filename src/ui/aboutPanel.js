@@ -16,7 +16,7 @@ const EXPERIMENTS = [
   ],
   [
     "Negative Gaussian curvature",
-    "Choose the hourglass and colour the mandrel by K (blue = saddle-like). Raise the take-up speed to about 100 mm/s: the braid angle at the waist drops to about 12°, κn = k_m cos²α + k_p sin²α turns negative along the yarn, and the free yarn bridges the waist (bridging and contact are flagged).",
+    "Choose the hourglass and colour the mandrel by K (blue = saddle-like). At the waist centre κn = k_m cos²α + k_p sin²α is negative along the yarn for braid angles below about 20°. Raise the take-up speed to about 100 mm/s: the yarn approaches the waist at a low braid angle, the free yarn catches on the far side, and the concave middle of the waist is spanned by one straight chord (bridging and contact are flagged).",
   ],
   [
     "Off-axis mandrel",

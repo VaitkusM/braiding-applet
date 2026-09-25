@@ -83,8 +83,8 @@ export class App {
     this.activeTab = "plots";
 
     this.bindUI();
+    this.cameraPlaced = false;
     this.rebuild();
-    if (this.sim) this.view.setView("overview", this.viewBounds());
     this.lastPanelUpdate = 0;
     this.last = performance.now();
     this.loop = this.loop.bind(this);
@@ -104,7 +104,12 @@ export class App {
     const v = validateParams(this.params);
     this.controls.refresh();
     if (v.errors.length) {
+      // Keep the previous run on screen but paused, so it is not mistaken for the new settings.
       this.showMessage(`Cannot start: ${v.errors.join(" ")}`, 0);
+      if (this.sim && this.playing) {
+        this.setPlay(false);
+        this.pausedByError = true;
+      }
       return;
     }
     const notes = [...v.fixes, ...v.warnings];
@@ -116,6 +121,7 @@ export class App {
     this.finishing = false;
     const sim = this.sim;
     this.display.selectedYarn = Math.min(this.display.selectedYarn, sim.yarns.length - 1);
+    this.controls.refresh(); // after the clamp, so the selected-yarn slider shows the real value
 
     this.mandrelView = new MandrelView(sim);
     this.yarnView = new YarnView(sim, {
@@ -136,6 +142,14 @@ export class App {
     try {
       globalThis.history.replaceState(null, "", `#${encodeParams(this.params)}`);
     } catch { /* e.g. sandboxed iframes */ }
+    if (!this.cameraPlaced) {
+      this.view.setView("overview", this.viewBounds());
+      this.cameraPlaced = true;
+    }
+    if (this.pausedByError) {
+      this.pausedByError = false;
+      this.setPlay(true);
+    }
   }
 
   disposeViews() {
@@ -225,6 +239,10 @@ export class App {
 
   action(name) {
     const p = this.params;
+    if (!this.sim && name !== "editProfile") {
+      this.showMessage("Fix the parameters first (see the message above).", 4000);
+      return;
+    }
     if (name === "takeUpForAngle") {
       const c = toSimConfig(p);
       const prof = this.sim?.profile;
@@ -313,6 +331,16 @@ export class App {
       const r = canvas.getBoundingClientRect();
       this.pickAt(e.clientX - r.left, e.clientY - r.top);
     });
+    // A share link pasted into the address bar of an open tab: load its parameters.
+    globalThis.addEventListener("hashchange", () => {
+      const next = decodeParams(globalThis.location.hash.slice(1));
+      if (!next || JSON.stringify(next) === JSON.stringify(this.params)) return;
+      Object.assign(this.params, next);
+      this.controls.rebuildCarriers();
+      this.controls.rebuildShape();
+      this.controls.refresh();
+      this.rebuild();
+    });
     globalThis.addEventListener("resize", () => {
       if (!this.sim) return;
       const { w, h } = this.view.size;
@@ -323,6 +351,7 @@ export class App {
 
   /** Selects the carrier (raycast) or yarn (nearest centre line) under a viewport point. */
   pickAt(x, y) {
+    if (!this.sim) return;
     const { w, h } = this.view.size;
     const ray = new THREE.Raycaster();
     ray.setFromCamera(new THREE.Vector2((x / w) * 2 - 1, -(y / h) * 2 + 1), this.view.camera);
@@ -336,7 +365,10 @@ export class App {
         }
       }
     }
-    const k = this.yarnView.pick(x, y, this.view.camera, this.view.size);
+    // Yarns behind the mandrel are hidden: limit picking to points in front of the mandrel hit.
+    const hit = ray.intersectObject(this.mandrelView.mesh)[0];
+    const maxDist = hit ? hit.distance + 4 * this.yarnView.thickness + 1e-3 : Infinity;
+    const k = this.yarnView.pick(x, y, this.view.camera, this.view.size, maxDist);
     if (k >= 0) this.select(k);
   }
 

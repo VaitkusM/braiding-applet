@@ -114,6 +114,30 @@ export class CrossingTracker {
       for (let i = this.cursor[k]; i < y.count; i++) this.processSegment(k, i, now);
       this.cursor[k] = Math.max(this.cursor[k], y.count);
     }
+    // Cells behind the fell line are never visited again, so lazy pruning alone would keep every
+    // segment ever deposited: sweep the whole hash every half keep-time.
+    if (now >= (this.nextSweep ?? 0)) {
+      this.nextSweep = now + this.keepTime / 2;
+      this.prune(now);
+    }
+  }
+
+  /** Removes segments older than keepTime (and empty cells) from the hash. */
+  prune(now) {
+    const limit = now - this.keepTime;
+    for (const [key, list] of this.grid) {
+      let w = 0;
+      for (let r = 0; r < list.length; r++) if (list[r].tmax >= limit) list[w++] = list[r];
+      list.length = w;
+      if (w === 0) this.grid.delete(key);
+    }
+  }
+
+  /** Number of segments currently stored in the hash (diagnostics / tests). */
+  get storedSegments() {
+    let n = 0;
+    for (const list of this.grid.values()) n += list.length;
+    return n;
   }
 
   /** Segment from sample i−1 to i of yarn k: test against the opposite family, then insert. */

@@ -273,12 +273,14 @@ export class Simulation {
       y.push(this.symmetric ? rotateSample(s, this.rotationOf(kk)) : s);
       this.currentFlags[kk] = s.flags;
     }
-    this.stats.samples++;
-    if (s.flags & FLAG.SLIP) this.stats.slip++;
-    if (s.flags & FLAG.BRIDGE) this.stats.bridge++;
-    if (s.flags & FLAG.CONTACT) this.stats.contact++;
-    if (s.flags & FLAG.LIFTOFF) this.stats.liftoff++;
-    if (s.flags & FLAG.JAM) this.stats.jam++;
+    // Counted per yarn, so the numbers do not depend on the symmetry reduction.
+    const n = targets.length;
+    this.stats.samples += n;
+    if (s.flags & FLAG.SLIP) this.stats.slip += n;
+    if (s.flags & FLAG.BRIDGE) this.stats.bridge += n;
+    if (s.flags & FLAG.CONTACT) this.stats.contact += n;
+    if (s.flags & FLAG.LIFTOFF) this.stats.liftoff += n;
+    if (s.flags & FLAG.JAM) this.stats.jam += n;
   }
 
   /** All bias yarn indices of the same family as yarn k. */
@@ -352,6 +354,7 @@ export class Simulation {
       for (const kk of targets) {
         this.fell[kk] = this.symmetric ? rotateZ(p, this.rotationOf(kk)) : p;
         this.mode[kk] = solver.mode;
+        if (solver.mode === "ended") this.currentFlags[kk] = 0; // no live status after the end
       }
     });
   }

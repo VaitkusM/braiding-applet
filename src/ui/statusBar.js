@@ -55,6 +55,7 @@ export class StatusBar {
     for (const b of BADGES) {
       const el = doc.createElement("span");
       el.className = "badge";
+      el.hidden = true; // shown once the condition has occurred
       el.title = b.title;
       const dot = doc.createElement("span");
       dot.className = "dot";

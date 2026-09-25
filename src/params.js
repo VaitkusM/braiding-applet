@@ -90,6 +90,33 @@ export function defaultParams() {
   };
 }
 
+/**
+ * Admissible ranges of the numeric parameters: [label, min, max] (the sliders stay inside these;
+ * shared links are checked against them). Positive quantities use a tiny positive minimum.
+ */
+const NUMERIC_LIMITS = Object.freeze({
+  carriers: ["Carrier count", 4, 400],
+  rpm: ["Carrier speed [rpm]", 1e-3, 600],
+  takeUpMm: ["Take-up speed [mm/s]", 1e-3, 5000],
+  ringRadiusMm: ["Guide-ring radius [mm]", 1, 5000],
+  offsetXMm: ["Axis offset x [mm]", -1000, 1000],
+  offsetYMm: ["Axis offset y [mm]", -1000, 1000],
+  tiltDeg: ["Axis tilt [°]", -30, 30],
+  tieZMm: ["Tie ring position [mm]", 0, 1e4],
+  initialConvergenceMm: ["Initial convergence length [mm]", 1e-3, 5000],
+  yarnWidthMm: ["Yarn width [mm]", 1e-3, 200],
+  axialWidthMm: ["Axial yarn width [mm]", 1e-3, 200],
+  yarnThicknessMm: ["Yarn thickness [mm]", 1e-3, 50],
+  tensionN: ["Yarn tension [N]", 1e-6, 1e5],
+  friction: ["Friction coefficient", 0, 10],
+  dsMaxMm: ["Max step Δs [mm]", 0.01, 10],
+  dphiMaxDeg: ["Max rotation Δφ [°]", 0.01, 10],
+  turnMaxDeg: ["Max turn per step [°]", 0.05, 20],
+});
+
+/** Largest number of stored yarn samples accepted for one run (memory guard, ~100 B each). */
+export const MAX_SAMPLES = 6e6;
+
 /** Pattern key → m. */
 export const patternM = (key) => PATTERNS[key].m;
 
@@ -147,6 +174,23 @@ export function profileSpec(p) {
  */
 export function validateParams(p) {
   const errors = [], warnings = [], fixes = [];
+  if (!Object.hasOwn(PATTERNS, p.pattern)) {
+    fixes.push(`Unknown braid pattern "${p.pattern}"; using the regular 2/2 pattern.`);
+    p.pattern = "regular";
+  }
+  if (!Object.hasOwn(MANDREL_LABELS, p.mandrel)) {
+    fixes.push(`Unknown mandrel "${p.mandrel}"; using the taper.`);
+    p.mandrel = "taper";
+  }
+  // Every numeric parameter must be a finite number; these must also be positive / in range.
+  for (const [key, [label, lo, hi]] of Object.entries(NUMERIC_LIMITS)) {
+    const x = p[key];
+    if (!(typeof x === "number" && Number.isFinite(x) && x >= lo && x <= hi)) {
+      errors.push(`${label} must be a number in [${lo}, ${hi}] (got ${x}).`);
+    }
+  }
+  if (!Number.isInteger(p.carriers)) errors.push("The number of carriers must be an integer.");
+  if (errors.length) return { errors, warnings, fixes };
   const m = patternM(p.pattern);
 
   // Carrier count must satisfy 2m | N.
@@ -164,6 +208,13 @@ export function validateParams(p) {
 
   // Shape sanity.
   const s = p.shapes[p.mandrel];
+  for (const [key, val] of Object.entries(s)) {
+    if (key !== "points" && !(Number.isFinite(val) && (key !== "length" || val > 0))) {
+      errors.push(
+        `Shape parameter "${key}" must be a finite number${key === "length" ? " > 0" : ""}.`,
+      );
+    }
+  }
   if (p.mandrel === "taper" && !(s.zEnd > s.zStart)) {
     errors.push("Taper: the transition end must lie after its start.");
   }
@@ -222,6 +273,27 @@ export function validateParams(p) {
   if (p.yarnWidthMm <= 0 || p.yarnThicknessMm <= 0) {
     errors.push("Yarn width and thickness must be positive.");
   }
+  // Memory guard: estimated number of stored samples = yarns × path length / step. The path is
+  // longest where the (quasi-static) braid angle is largest.
+  const c = toSimConfig(p);
+  let cosMin = 1;
+  for (let i = 0; i <= 100; i++) {
+    const e = profile.evaluate((i / 100) * profile.length);
+    const a = Math.atan2(c.omega * e.r, c.takeUp * Math.sqrt(1 + e.dr * e.dr));
+    cosMin = Math.min(cosMin, Math.cos(a));
+  }
+  const samples = (p.carriers * profile.length) / (Math.max(cosMin, 1e-3) * c.dsMax);
+  if (samples > MAX_SAMPLES) {
+    errors.push(
+      `This run would store about ${(samples / 1e6).toFixed(0)} million yarn samples (the braid ` +
+        `angle is nearly 90°). Reduce the carriers or the carrier speed, raise the take-up speed, ` +
+        `or increase the step Δs.`,
+    );
+  } else if (samples > MAX_SAMPLES / 3) {
+    warnings.push(
+      `Large run (≈ ${(samples / 1e6).toFixed(1)} million samples): expect slow updates.`,
+    );
+  }
   if (p.carriers * (p.yarnWidthMm * 1e-3) / (4 * Math.PI * profile.rMin) >= 1) {
     warnings.push(
       "The yarns are too wide for the smallest radius: the braid is jammed at any angle there.",
@@ -250,7 +322,9 @@ export function decodeParams(s) {
     const d = defaultParams();
     for (const k of Object.keys(d)) {
       if (k === "shapes") continue;
-      if (k in raw && typeof raw[k] === typeof d[k]) d[k] = raw[k];
+      if (!Object.hasOwn(raw, k) || typeof raw[k] !== typeof d[k]) continue;
+      if (typeof d[k] === "number" && !Number.isFinite(raw[k])) continue;
+      d[k] = raw[k];
     }
     if (raw.shapes && typeof raw.shapes === "object") {
       for (const key of Object.keys(d.shapes)) {
@@ -260,15 +334,20 @@ export function decodeParams(s) {
           if (f === "points") {
             if (
               Array.isArray(src.points) &&
-              src.points.every((q) => Array.isArray(q) && q.length === 2)
+              src.points.length >= 2 && src.points.length <= 64 &&
+              src.points.every((q) =>
+                Array.isArray(q) && q.length === 2 && Number.isFinite(q[0]) && Number.isFinite(q[1])
+              )
             ) {
               d.shapes[key].points = src.points.map(([z, r]) => [Number(z), Number(r)]);
             }
-          } else if (typeof src[f] === "number") d.shapes[key][f] = src[f];
+          } else if (Number.isFinite(src[f])) d.shapes[key][f] = src[f];
         }
       }
     }
-    if (!(d.pattern in PATTERNS) || !(d.mandrel in MANDREL_LABELS)) return null;
+    if (!Object.hasOwn(PATTERNS, d.pattern) || !Object.hasOwn(MANDREL_LABELS, d.mandrel)) {
+      return null;
+    }
     return d;
   } catch {
     return null;

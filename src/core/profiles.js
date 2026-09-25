@@ -148,13 +148,19 @@ export function validateProfile(profile, limits = {}) {
   const maxSlope = limits.maxSlope ?? 3;
   const n = limits.samples ?? 2000;
   let minRadius = Infinity, maxRadius = -Infinity, maxAbsSlope = 0;
+  let finite = true;
   for (let i = 0; i <= n; i++) {
     const e = profile.evaluate((i / n) * profile.length);
+    if (!Number.isFinite(e.r) || !Number.isFinite(e.dr) || !Number.isFinite(e.d2r)) {
+      finite = false;
+      continue;
+    }
     minRadius = Math.min(minRadius, e.r);
     maxRadius = Math.max(maxRadius, e.r);
     maxAbsSlope = Math.max(maxAbsSlope, Math.abs(e.dr));
   }
   const messages = [];
+  if (!finite) messages.push("The profile is not defined everywhere (non-numeric control points).");
   if (minRadius < rMinAllowed) {
     messages.push(
       `Radius drops to ${(minRadius * 1e3).toFixed(1)} mm (< ${

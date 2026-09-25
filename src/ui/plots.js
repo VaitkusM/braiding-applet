@@ -125,6 +125,7 @@ export class LinePlot {
     this.canvas.addEventListener("pointermove", (e) => this.onHover(e));
     this.canvas.addEventListener("pointerleave", () => {
       this.hoverX = null;
+      this.lastPointer = null;
       this.tooltip.hidden = true;
       this.draw();
     });
@@ -159,7 +160,8 @@ export class LinePlot {
    */
   setData(d) {
     this.data = d;
-    this.draw();
+    if (this.hoverX !== null && this.lastPointer) this.onHover(this.lastPointer); // keep tooltip current
+    else this.draw();
     if (!this.tableWrap.hidden) this.renderTable();
   }
 
@@ -194,9 +196,13 @@ export class LinePlot {
       }
       if (this.o.yMin === undefined) y0 = lo;
       if (this.o.yMax === undefined) y1 = hi;
+      // No finite data yet: a unit range above a fixed minimum (or around 0).
+      if (!Number.isFinite(y0)) y0 = Number.isFinite(y1) ? y1 - 1 : 0;
+      if (!Number.isFinite(y1)) y1 = y0 + 1;
       if (y0 === y1) {
-        y0 -= 1;
-        y1 += 1;
+        // Degenerate range: widen only the ends that are not fixed.
+        if (this.o.yMax === undefined) y1 += 1;
+        else if (this.o.yMin === undefined) y0 -= 1;
       }
     }
     if (!Number.isFinite(x0)) [x0, x1] = [0, 1];
@@ -353,6 +359,7 @@ export class LinePlot {
 
   /** Crosshair snapping to the nearest x + tooltip listing all series. */
   onHover(e) {
+    this.lastPointer = { clientX: e.clientX };
     const { x } = this.data;
     if (!x.length || !this.geom) return;
     const r = this.canvas.getBoundingClientRect();

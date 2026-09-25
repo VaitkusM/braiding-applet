@@ -143,3 +143,18 @@ Deno.test("CrossingEvents: smoothed side is exact at crossings and blends in bet
   assert(ev.takeDirty() === 3, "dirty from the previous event");
   assertClose(new CrossingEvents().sideAt(1), 0, 0);
 });
+
+Deno.test("crossings: the spatial hash is pruned (memory stays bounded)", () => {
+  const sim = new Simulation({
+    ...base,
+    carriers: 16,
+    m: 2,
+    profile: { kind: "cylinder", length: 1.2, radius: 0.04 },
+  });
+  sim.advance(8);
+  const early = sim.crossings.storedSegments;
+  sim.advance(16);
+  const late = sim.crossings.storedSegments;
+  // Deposited segments grow linearly with time; stored ones must not (only ~one revolution kept).
+  assert(late < 1.3 * early, `stored segments ${early} → ${late}`);
+});

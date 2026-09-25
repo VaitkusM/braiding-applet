@@ -76,10 +76,20 @@ export class YarnView {
     const aRef = Math.atan2(c.omega * rRef, c.takeUp);
     const sCross = (2 * Math.PI * rRef) / (c.carriers * Math.max(0.2, Math.sin(aRef)));
     let ds = Math.min(3e-3, Math.max(5e-4, sCross / 6));
-    const pathLen = prof.length / Math.max(0.15, Math.cos(aRef));
+    // Longest path: where the (quasi-static) braid angle is largest.
+    let cosMin = 1;
+    for (let i = 0; i <= 50; i++) {
+      const e = prof.evaluate((i / 50) * prof.length);
+      cosMin = Math.min(
+        cosMin,
+        Math.cos(Math.atan2(c.omega * e.r, c.takeUp * Math.sqrt(1 + e.dr * e.dr))),
+      );
+    }
+    const pathLen = prof.length / Math.max(cosMin, 1e-3);
     const nYarns = sim.yarns.length + sim.axialYarns.length;
     this.undulate = nYarns * (pathLen / ds) * NSEG <= VERTEX_BUDGET;
-    if (!this.undulate) ds = Math.max(ds, 2e-3);
+    // Too many vertices: flat layered tapes, with the ring spacing that meets the budget.
+    if (!this.undulate) ds = Math.max(ds, 2e-3, (nYarns * pathLen * NSEG) / VERTEX_BUDGET);
     this.ringSpacing = ds;
     this.capacityHint = Math.ceil((pathLen / ds) * 1.1) + 16;
 
@@ -127,6 +137,12 @@ export class YarnView {
       nor.set(e.geo.getAttribute("normal").array);
       col.set(e.geo.getAttribute("color").array);
       centers.set(e.centers);
+      // Replacing attributes would leave the old GL buffers alive: use a fresh geometry instead.
+      const old = e.geo;
+      e.geo = new THREE.BufferGeometry();
+      e.mesh.geometry = e.geo;
+      e.geo.setDrawRange(0, old.drawRange.count);
+      old.dispose();
     }
     const idx = new Uint32Array((cap - 1) * NSEG * 6);
     let o = 0;
@@ -259,9 +275,11 @@ export class YarnView {
       case "alpha":
         return lin(sequential(Math.abs(y.alpha[i]) / (Math.PI / 2)));
       case "slip": {
-        const s = Math.abs(y.slip[i]) / c.friction;
-        if (!Number.isFinite(s)) return neutral;
-        return s > 1 ? hexLin(STATUS.critical) : lin(sequential(s));
+        // Status first (also for μ = 0), then the ratio |κg/κn| / μ on the sequential scale.
+        const r = Math.abs(y.slip[i]);
+        if (!Number.isFinite(r)) return neutral;
+        if (r > c.friction) return hexLin(STATUS.critical);
+        return lin(sequential(c.friction > 0 ? r / c.friction : 0));
       }
       case "kn":
         return Number.isFinite(y.kn[i]) ? lin(sequential(y.kn[i] * rMin)) : neutral;
@@ -269,7 +287,7 @@ export class YarnView {
         return Number.isFinite(y.kg[i]) ? lin(diverging(y.kg[i] * rMin * 2)) : neutral;
       case "pressure":
         return Number.isFinite(y.kn[i])
-          ? lin(sequential((c.tension * y.kn[i]) / (c.tension / rMin)))
+          ? lin(sequential(y.kn[i] * rMin)) // p / p_max = T κn / (T / r_min)
           : neutral;
       case "flags": {
         const f = y.flags[i];
@@ -366,6 +384,7 @@ export class YarnView {
       }
       cols.clearUpdateRanges();
       cols.needsUpdate = true;
+      e.fullUpload = true; // the next sync must upload everything, not just the newest rings
     }
   }
 
@@ -385,16 +404,20 @@ export class YarnView {
    * Picks the bias yarn whose centre line passes closest to a screen point.
    * @param {number} x @param {number} y CSS pixels in the viewport
    * @param {THREE.Camera} camera @param {{w:number, h:number}} size
+   * @param {number} [maxDist=Infinity] ignore ring centres farther from the camera (occlusion)
    * @returns {number} yarn index or −1 (nothing within 12 px)
    */
-  pick(x, y, camera, size) {
+  pick(x, y, camera, size, maxDist = Infinity) {
     const m = this.group.matrixWorld, v = new THREE.Vector3();
+    const eye = camera.getWorldPosition(new THREE.Vector3());
     let best = -1, bestD = 12 * 12;
     for (const e of this.entries) {
       if (e.k < 0) continue;
       const step = Math.max(1, Math.floor(e.written / 400));
       for (let r = 0; r < e.written; r += step) {
-        v.fromArray(e.centers, 3 * r).applyMatrix4(m).project(camera);
+        v.fromArray(e.centers, 3 * r).applyMatrix4(m);
+        if (v.distanceTo(eye) > maxDist) continue;
+        v.project(camera);
         if (v.z < -1 || v.z > 1) continue;
         const dx = (v.x * 0.5 + 0.5) * size.w - x, dy = (-v.y * 0.5 + 0.5) * size.h - y;
         const d = dx * dx + dy * dy;

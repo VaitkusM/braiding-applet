@@ -294,8 +294,9 @@ export class ProfileEditor {
   onDown(e) {
     const i = this.hit(e);
     this.selected = i;
-    if (i >= 0) {
+    if (i >= 0 && e.button === 0) {
       this.drag = i;
+      this.dragStart = [...this.points[i]]; // to tell a real drag from a click
       this.canvas.setPointerCapture(e.pointerId);
     }
     this.draw();
@@ -318,10 +319,10 @@ export class ProfileEditor {
   }
 
   onUp() {
-    if (this.drag >= 0) {
-      this.drag = -1;
-      this.onChange();
-    }
+    if (this.drag < 0) return;
+    const [u0, r0] = this.dragStart, [u1, r1] = this.points[this.drag];
+    this.drag = -1;
+    if (u0 !== u1 || r0 !== r1) this.onChange(); // a plain click selects without restarting
   }
 
   onDouble(e) {

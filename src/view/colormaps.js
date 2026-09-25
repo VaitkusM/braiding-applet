@@ -112,6 +112,7 @@ export function mixOklab(hexA, hexB, t) {
 
 /** Piecewise-linear sampling of a hex ramp at t ∈ [0, 1] (interpolated in OKLab). */
 function sampleRamp(ramp, t) {
+  if (!Number.isFinite(t)) return hexToRgb("#898781"); // undefined values → neutral gray
   const x = Math.min(1, Math.max(0, t)) * (ramp.length - 1);
   const i = Math.min(ramp.length - 2, Math.floor(x));
   return mixOklab(ramp[i], ramp[i + 1], x - i);
@@ -122,6 +123,7 @@ export const sequential = (t) => sampleRamp(SEQ_BLUE, t);
 
 /** Diverging scale: t ∈ [−1, 1] → sRGB (blue ← gray → red). */
 export function diverging(t) {
+  if (!Number.isFinite(t)) return hexToRgb("#898781");
   const u = Math.min(1, Math.max(-1, t));
   return u < 0 ? mixOklab(DIV_MID, DIV_NEG, -u) : mixOklab(DIV_MID, DIV_POS, u);
 }

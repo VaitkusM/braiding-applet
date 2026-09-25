@@ -64,6 +64,16 @@ const SCENARIOS = [
   { name: "tab-theory", params: { mandrel: "cone" }, display: { selectedYarn: 3 }, tab: "theory" },
   { name: "tab-profile-custom", params: { mandrel: "custom" }, display: {}, tab: "profile" },
   { name: "tab-about", params: {}, display: {}, tab: "about" },
+  // Regression: switching the colour mode mid-run must recolour ALL yarns (checked by pixels).
+  {
+    name: "recolour-mid-run",
+    params: { mandrel: "cylinder" },
+    display: {},
+    view: "fell",
+    later: { yarnColor: "alpha" },
+  },
+  // Regression: an invalid share link shows a message instead of crashing.
+  { name: "invalid-link", params: { tieZMm: 5000 }, display: {}, expectNoSim: true },
   // Images for the README (docs/images): parameter panel collapsed.
   { name: "readme-overview", params: {}, display: {}, gui: false, wait: 9 },
   {
@@ -138,6 +148,54 @@ for (const sc of SCENARIOS) {
     } else {
       await new Promise((r) => setTimeout(r, (sc.wait ?? Number(args.seconds)) * 1000));
     }
+    if (sc.later) {
+      // Count "+"-family orange pixels with the machine hidden (bobbins and free yarns are orange
+      // too), before and after switching to a scalar colour mode.
+      const countOrange = () =>
+        page.evaluate(() => {
+          const app = globalThis.__braid.app;
+          const gl = app.view.renderer.getContext();
+          app.view.render();
+          const { width: w, height: h } = gl.canvas;
+          const px = new Uint8Array(w * h * 4);
+          gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
+          let orange = 0;
+          for (let i = 0; i < px.length; i += 4) {
+            const [r, g, b] = [px[i], px[i + 1], px[i + 2]];
+            if (r > 150 && r - g > 50 && r - b > 80) orange++;
+          }
+          return orange;
+        });
+      await page.evaluate(() => {
+        const app = globalThis.__braid.app;
+        app.playing = false;
+        // Hide everything but mandrel and yarns (bobbins, free yarns and the geodesic are coloured).
+        const hide = {
+          showMachine: false,
+          showFreeYarns: false,
+          showGeodesic: false,
+          showDarboux: false,
+        };
+        Object.assign(app.display, hide);
+        for (const k of Object.keys(hide)) app.applyDisplay(k);
+      });
+      await new Promise((r) => setTimeout(r, 500));
+      const before = await countOrange();
+      await page.evaluate((display) => {
+        const app = globalThis.__braid.app;
+        Object.assign(app.display, display);
+        for (const k of Object.keys(display)) app.applyDisplay(k);
+      }, { args: [sc.later] });
+      await new Promise((r) => setTimeout(r, 1500));
+      const after = await countOrange();
+      console.log(`  orange yarn pixels: ${before} before, ${after} after recolouring`);
+      if (!(before > 1000)) {
+        problems.push(`recolour check invalid: only ${before} orange pixels before`);
+      }
+      if (after > 0.02 * before) {
+        problems.push(`recolouring incomplete: ${after} orange pixels remain`);
+      }
+    }
     const state = await page.evaluate(() => ({
       time: globalThis.__braid.time,
       samples: globalThis.__braid.samples,
@@ -146,8 +204,21 @@ for (const sc of SCENARIOS) {
         .filter((r) => r.responseStatus >= 400)
         .map((r) => `${r.responseStatus} ${r.name}`),
     }));
-    if (!(state.time > 0.5)) problems.push(`simulation did not advance (t = ${state.time})`);
-    if (!(state.samples > 100)) problems.push(`too few deposited samples (${state.samples})`);
+    if (sc.expectNoSim) {
+      const msg = await page.evaluate(() => {
+        const m = document.getElementById("message");
+        return m.hidden ? "" : m.textContent;
+      });
+      if (!msg.includes("Cannot start")) {
+        problems.push(`expected a "Cannot start" message, got "${msg}"`);
+      }
+      await page.evaluate(() =>
+        document.querySelector("#canvas-host canvas").dispatchEvent(new PointerEvent("pointerup"))
+      );
+    } else {
+      if (!(state.time > 0.5)) problems.push(`simulation did not advance (t = ${state.time})`);
+      if (!(state.samples > 100)) problems.push(`too few deposited samples (${state.samples})`);
+    }
     for (const e of state.errors) problems.push(`app error: ${e}`);
     for (const f of state.failed) problems.push(`resource failed: ${f}`);
     console.log(`  t = ${state.time.toFixed(1)} s, samples = ${state.samples}`);
