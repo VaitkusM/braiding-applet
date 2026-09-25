@@ -45,8 +45,11 @@ jobs:
         run: |
           mkdir _site
           cp index.html _site/
-          cp -r src styles assets _site/
+          for d in src styles assets; do
+            if [ -d "$d" ]; then cp -r "$d" _site/; fi
+          done
           touch _site/.nojekyll
+          find _site -type f | sort
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
