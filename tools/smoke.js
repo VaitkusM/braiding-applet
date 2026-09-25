@@ -64,6 +64,16 @@ const SCENARIOS = [
   { name: "tab-theory", params: { mandrel: "cone" }, display: { selectedYarn: 3 }, tab: "theory" },
   { name: "tab-profile-custom", params: { mandrel: "custom" }, display: {}, tab: "profile" },
   { name: "tab-about", params: {}, display: {}, tab: "about" },
+  // Images for the README (docs/images): parameter panel collapsed.
+  { name: "readme-overview", params: {}, display: {}, gui: false, wait: 9 },
+  {
+    name: "readme-fell-zone",
+    params: { mandrel: "bulge", triaxial: true, carriers: 24 },
+    display: {},
+    view: "fell",
+    gui: false,
+    wait: 8,
+  },
 ];
 
 const only = args.only ? new Set(args.only.split(",")) : null;
@@ -106,14 +116,15 @@ for (const sc of SCENARIOS) {
 
   if (!fatal) {
     await page.evaluate(
-      (display, view, tab) => {
+      (display, view, tab, gui) => {
         const app = globalThis.__braid.app;
         Object.assign(app.display, display);
         for (const k of Object.keys(display)) app.applyDisplay(k);
         if (view) app.view.setView(view, app.viewBounds());
         if (tab) app.showTab(tab);
+        if (gui === false) app.controls.gui.close();
       },
-      { args: [sc.display, sc.view ?? null, sc.tab ?? null] },
+      { args: [sc.display, sc.view ?? null, sc.tab ?? null, sc.gui ?? true] },
     );
     if (sc.finish) {
       await page.evaluate(() => document.getElementById("btn-finish").click());
@@ -125,7 +136,7 @@ for (const sc of SCENARIOS) {
         problems.push("run-to-end did not finish");
       }
     } else {
-      await new Promise((r) => setTimeout(r, Number(args.seconds) * 1000));
+      await new Promise((r) => setTimeout(r, (sc.wait ?? Number(args.seconds)) * 1000));
     }
     const state = await page.evaluate(() => ({
       time: globalThis.__braid.time,
