@@ -125,8 +125,11 @@ export class Simulation {
     /** Solver mode per bias yarn: "pinned" | "wrapping" | "ended". */
     this.mode = this.yarns.map(() => "pinned");
 
-    /** Time series of the convergence length h (machine-frame distance ring plane → fell point). */
-    this.series = { t: [], hPlus: [], hMinus: [], hMin: [], hMax: [], ringZ: [] };
+    /**
+     * Time series: convergence length h (machine-frame distance ring plane → fell point; mean of
+     * each family and min/max over all yarns), ring position on the mandrel axis, mean fell z_M.
+     */
+    this.series = { t: [], hPlus: [], hMinus: [], hMin: [], hMax: [], ringZ: [], zFell: [] };
     this.nextSeriesTime = 0;
     /** Time and h at which the first "+" yarn started wrapping (for the Du–Popper reference). */
     this.wrapStart = null;
@@ -358,26 +361,35 @@ export class Simulation {
     return -this.pose.toMachine(pM, t)[2];
   }
 
-  /** Samples the h(t) time series. */
+  /** Samples the h(t) time series (yarns that already ended are excluded). */
   recordSeries(force) {
     if (!force && this.time < this.nextSeriesTime) return;
     this.nextSeriesTime = this.time + SERIES_DT;
     const P = this.machine.perFamily;
-    let sp = 0, sm = 0, mn = Infinity, mx = -Infinity;
+    let sp = 0, sm = 0, np = 0, nm = 0, mn = Infinity, mx = -Infinity;
     this.fell.forEach((p, k) => {
+      if (this.mode[k] === "ended") return;
       const h = this.convergenceLength(p, this.time);
-      if (k < P) sp += h;
-      else sm += h;
+      if (k < P) {
+        sp += h;
+        np++;
+      } else {
+        sm += h;
+        nm++;
+      }
       mn = Math.min(mn, h);
       mx = Math.max(mx, h);
     });
+    const active = this.solvers.filter((sv) => sv.mode !== "ended");
+    if (!active.length) return;
     const s = this.series;
     s.t.push(this.time);
-    s.hPlus.push(sp / P);
-    s.hMinus.push(sm / P);
+    s.hPlus.push(np ? sp / np : NaN);
+    s.hMinus.push(nm ? sm / nm : NaN);
     s.hMin.push(mn);
     s.hMax.push(mx);
     s.ringZ.push(this.pose.ringAxisParam(this.time));
+    s.zFell.push(active.reduce((a, sv) => a + sv.z, 0) / active.length);
   }
 
   /** Marks the run as finished. */

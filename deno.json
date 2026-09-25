@@ -1,4 +1,9 @@
 {
+  "imports": {
+    "@astral/astral": "jsr:@astral/astral@0.5.6",
+    "@std/cli": "jsr:@std/cli@^1"
+  },
+  "lock": false,
   "tasks": {
     "test": "deno test --allow-read tests/",
     "serve": "deno run --allow-net --allow-read --allow-sys jsr:@std/http@1/file-server --port 8000 --host 127.0.0.1 .",
@@ -7,13 +12,22 @@
   },
   "lint": {
     "rules": {
-      "exclude": ["no-window", "no-window-prefix"]
+      "exclude": [
+        "no-window",
+        "no-window-prefix"
+      ]
     }
   },
   "fmt": {
     "lineWidth": 100,
     "proseWrap": "preserve",
-    "exclude": ["tasks.md", "docs/PLAN.md"]
+    "exclude": [
+      "tasks.md",
+      "docs/PLAN.md"
+    ]
   },
-  "exclude": ["_site/", "screenshots/"]
+  "exclude": [
+    "_site/",
+    "screenshots/"
+  ]
 }

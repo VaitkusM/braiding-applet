@@ -2,11 +2,126 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Braiding Applet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Braiding Applet — circular braiding, yarn deposition & differential geometry</title>
+    <meta
+      name="description"
+      content="Interactive 3D explorer: how an idealized circular braiding machine lays yarns onto a mandrel, and how the yarn paths relate to the differential geometry of the surface and the mechanics of the yarns."
+    />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.9/dist/katex.min.css" />
+    <link rel="stylesheet" href="styles/main.css" />
+    <!-- Pinned third-party modules (no build step). Keep versions in sync with docs/ARCHITECTURE.md. -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/",
+          "lil-gui": "https://cdn.jsdelivr.net/npm/lil-gui@0.21.0/dist/lil-gui.esm.min.js",
+          "katex": "https://cdn.jsdelivr.net/npm/katex@0.18.9/dist/katex.mjs"
+        }
+      }
+    </script>
+    <script type="module" src="src/main.js"></script>
   </head>
   <body>
-    <h1>Braiding Applet</h1>
-    <p>Under construction — the interactive applet is being built.</p>
+    <div id="app">
+      <header id="topbar">
+        <div class="brand">
+          <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+            <path
+              d="M8 12 C24 12 40 52 56 52"
+              stroke="#d95926"
+              stroke-width="7"
+              fill="none"
+              stroke-linecap="round"
+            />
+            <path
+              d="M8 52 C24 52 40 12 56 12"
+              stroke="#199e70"
+              stroke-width="7"
+              fill="none"
+              stroke-linecap="round"
+            />
+          </svg>
+          <div>
+            <h1>Braiding Applet</h1>
+            <p class="subtitle">circular braiding · yarn deposition · differential geometry</p>
+          </div>
+        </div>
+        <div class="transport" role="group" aria-label="Simulation controls">
+          <button id="btn-play" class="btn primary" type="button" title="Play / pause (Space)">
+            Pause
+          </button>
+          <button id="btn-reset" class="btn" type="button" title="Restart the run (R)">
+            Restart
+          </button>
+          <button id="btn-finish" class="btn" type="button" title="Compute the rest of the run">
+            Run to end
+          </button>
+          <label class="speed" title="Simulated seconds per real second">
+            <span>Speed</span>
+            <select id="sel-speed">
+              <option value="0.25">¼×</option>
+              <option value="0.5">½×</option>
+              <option value="1">1×</option>
+              <option value="2" selected>2×</option>
+              <option value="5">5×</option>
+              <option value="10">10×</option>
+            </select>
+          </label>
+        </div>
+        <div class="status">
+          <div class="readout"><span class="label">t</span> <span id="ro-time">0.0 s</span></div>
+          <div class="progress" aria-label="Braided fraction of the mandrel">
+            <div id="progress-bar"></div>
+          </div>
+          <div id="badges" class="badges" aria-live="polite"></div>
+        </div>
+      </header>
+
+      <main id="main">
+        <section id="viewport" aria-label="3D view">
+          <div id="canvas-host"></div>
+          <div id="gui-host"></div>
+          <div id="labels-host" aria-hidden="true"></div>
+          <div id="colorbar" class="colorbar" hidden></div>
+          <div class="view-buttons" role="group" aria-label="Camera views">
+            <button class="btn small" type="button" data-view="overview">Overview</button>
+            <button class="btn small" type="button" data-view="fell">Fell zone</button>
+            <button class="btn small" type="button" data-view="side">Side</button>
+            <button class="btn small" type="button" data-view="front">Front</button>
+          </div>
+          <div id="message" class="message" hidden></div>
+        </section>
+
+        <aside id="sidepanel">
+          <nav class="tabs" role="tablist">
+            <button role="tab" class="tab active" data-tab="plots" aria-selected="true">
+              Plots
+            </button>
+            <button role="tab" class="tab" data-tab="theory" aria-selected="false">Theory</button>
+            <button role="tab" class="tab" data-tab="profile" aria-selected="false">Profile</button>
+            <button role="tab" class="tab" data-tab="about" aria-selected="false">About</button>
+          </nav>
+          <div class="tab-body">
+            <section id="tab-plots" class="tab-panel" role="tabpanel"></section>
+            <section id="tab-theory" class="tab-panel" role="tabpanel" hidden></section>
+            <section id="tab-profile" class="tab-panel" role="tabpanel" hidden></section>
+            <section id="tab-about" class="tab-panel" role="tabpanel" hidden></section>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <div id="fatal" class="fatal" hidden>
+      <h2>The applet could not start</h2>
+      <p id="fatal-text"></p>
+      <p>
+        It needs a browser with WebGL and JavaScript modules, and network access to
+        <code>cdn.jsdelivr.net</code> (three.js, lil-gui, KaTeX).
+      </p>
+    </div>
+    <noscript><p class="fatal">This applet needs JavaScript.</p></noscript>
   </body>
 </html>
