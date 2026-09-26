@@ -18,12 +18,12 @@ This block is repeated verbatim in `src/core/surface.js`.
 - **Outward unit normal** $n=\dfrac{S_\theta\times S_z}{|S_\theta\times S_z|}=\dfrac{(\cos\theta,\ \sin\theta,\ -r')}{\sqrt{1+r'^2}}$.
   The chart $(z,\theta)$ is therefore _left-handed_ with respect to $n$.
 - **First fundamental form**: $g_{zz}=1+r'^2$, $g_{z\theta}=0$, $g_{\theta\theta}=r^2$.
-- **Second fundamental form** with respect to the outward $n$ ($\mathrm{II}_{ij}=S_{ij}\cdot n$):
+- **Second fundamental form** with respect to the outward $n$ ($`\mathrm{II}_{ij}=S_{ij}\cdot n`$):
   $ii_{zz}=r''/\sqrt{1+r'^2}$, $ii_{z\theta}=0$, $ii_{\theta\theta}=-r/\sqrt{1+r'^2}$.
 - **Curvatures are convex-positive**: a convex body has positive curvatures.
   $$\kappa_n(t)=-\frac{\mathrm{II}(t,t)}{\mathrm{I}(t,t)},\quad k_m=-\frac{r''}{(1+r'^2)^{3/2}},\quad k_p=\frac{1}{r\sqrt{1+r'^2}},\quad K=k_mk_p=-\frac{r''}{r(1+r'^2)^2},\quad H=\tfrac12(k_m+k_p).$$
 - **Braid angle** $\alpha$: signed angle in the tangent plane from the meridian $m=S_z/|S_z|$ towards
-  the parallel $e=S_\theta/|S_\theta|$, i.e. $\alpha=\operatorname{atan2}(t\cdot e,\ t\cdot m)$. On a
+  the parallel $e=S_\theta/|S_\theta|$, i.e. $\alpha=\mathrm{atan2}(t\cdot e,\ t\cdot m)$. On a
   cylinder this is the usual angle to the axis. On sloped profiles the angle to the machine axis is
   different: $\cos\alpha_{3D}=\cos\alpha/\sqrt{1+r'^2}$.
 - **Darboux frame** of a curve on the surface: $(t,n,b)$ with $b=n\times t$, and
@@ -267,7 +267,9 @@ height $t_y(c+a\,\tilde\sigma(s))$ above the surface, where:
 - between crossings of different sign, $\tilde\sigma$ follows a half-cosine blend;
 - biaxial: $c=1,\ a=\frac12$; triaxial: $c=1.5,\ a=1$ with the axial yarns at $1.5$.
 
-Flat tapes of almost jammed braids may clip slightly near side changes.
+Laid yarns are drawn either as lines, like the free yarns, where the upper yarn is drawn on top by
+depth, or as flat tapes of width $w$. Flat tapes of almost jammed braids may clip slightly near
+side changes.
 
 ## 11. Validation
 

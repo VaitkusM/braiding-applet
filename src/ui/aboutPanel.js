@@ -54,7 +54,7 @@ export class AboutPanel {
         "Parameters (top right): the machine, the mandrel shape and placement, and the yarn properties. Changing one restarts the run.",
         "Mouse: drag to orbit, scroll to zoom, right-drag to pan. The camera buttons (top left) jump to preset views.",
         "Click a carrier or a deposited yarn to select it. Plots and live values then refer to that yarn, and its Darboux frame (t, n, b) and geodesic appear at its fell point.",
-        "Display (parameter panel): colour yarns by braid angle, slip ratio, curvatures or contact pressure, and the mandrel by Gaussian or mean curvature.",
+        "Display (parameter panel): draw the laid yarns as lines (like the free yarns) or as flat tapes; colour them by braid angle, slip ratio, curvatures or contact pressure, and the mandrel by Gaussian or mean curvature.",
         "Space plays or pauses, R restarts. “Run to end” computes the rest of the run as fast as possible.",
         "The URL always contains all parameters: copy it to share a set-up.",
       ]

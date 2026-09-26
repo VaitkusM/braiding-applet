@@ -11,6 +11,7 @@ import { LineSegments2 } from "three/addons/lines/LineSegments2.js";
 import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { AXIAL_COLOR, hexToRgb, SERIES, srgbToLinear } from "./colormaps.js";
+import { YARN_LINE_WIDTH } from "./yarnView.js";
 
 /** @typedef {import("../core/simulation.js").Simulation} Simulation */
 
@@ -150,7 +151,7 @@ export class MachineView {
     this.freeGeo = new LineSegmentsGeometry();
     this.freeGeo.setPositions(this.freePos);
     this.freeGeo.setColors(colors);
-    this.freeMat = new LineMaterial({ vertexColors: true, linewidth: 1.4 });
+    this.freeMat = new LineMaterial({ vertexColors: true, linewidth: YARN_LINE_WIDTH });
     this.freeLines = new LineSegments2(this.freeGeo, this.freeMat);
     this.freeLines.frustumCulled = false;
     this.group.add(this.freeLines);

@@ -44,6 +44,7 @@ export class App {
     this.display = {
       yarnColor: "family",
       mandrelColor: "metal",
+      yarnStyle: "line", // "line" (like the free yarns) | "tape"
       thicknessScale: 1.5,
       selectedYarn: 0,
       showMachine: true,
@@ -127,6 +128,7 @@ export class App {
     this.yarnView = new YarnView(sim, {
       thicknessScale: this.display.thicknessScale,
       colorMode: this.display.yarnColor,
+      style: this.display.yarnStyle,
     });
     this.overlayView = new OverlayView(sim, this.doc.getElementById("labels-host"));
     this.machineView = new MachineView(sim);
@@ -135,6 +137,7 @@ export class App {
     const { w, h } = this.view.size;
     this.machineView.setResolution(w, h);
     this.overlayView.setResolution(w, h);
+    this.yarnView.setResolution(w, h);
     for (const key of Object.keys(this.display)) this.applyDisplay(key, true);
     this.updateColorbar();
     for (const p of Object.values(this.panels)) p.reset?.(sim, this.display);
@@ -187,6 +190,7 @@ export class App {
         this.mandrelView.setColorMode(d.mandrelColor);
         break;
       case "thicknessScale":
+      case "yarnStyle":
         if (!silent) this.rebuildYarnView();
         break;
       case "selectedYarn":
@@ -209,15 +213,17 @@ export class App {
     if (!silent) this.updateColorbar();
   }
 
-  /** Rebuilds only the yarn meshes (e.g. new thickness exaggeration). */
+  /** Rebuilds only the yarn drawing (new style or thickness exaggeration). */
   rebuildYarnView() {
     this.mandrelView.group.remove(this.yarnView.group);
     this.yarnView.dispose();
     this.yarnView = new YarnView(this.sim, {
       thicknessScale: this.display.thicknessScale,
       colorMode: this.display.yarnColor,
+      style: this.display.yarnStyle,
     });
     this.yarnView.setSelected(this.display.selectedYarn);
+    this.yarnView.setResolution(this.view.size.w, this.view.size.h);
     this.mandrelView.group.add(this.yarnView.group);
   }
 
@@ -346,6 +352,7 @@ export class App {
       const { w, h } = this.view.size;
       this.machineView.setResolution(w, h);
       this.overlayView.setResolution(w, h);
+      this.yarnView.setResolution(w, h);
     });
   }
 

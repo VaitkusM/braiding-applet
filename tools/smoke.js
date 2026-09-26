@@ -72,6 +72,13 @@ const SCENARIOS = [
     view: "fell",
     later: { yarnColor: "alpha" },
   },
+  // Switching the yarn drawing to flat tapes (rebuilds the yarn view mid-run).
+  {
+    name: "tape-style",
+    params: { mandrel: "bulge" },
+    display: { yarnStyle: "tape" },
+    view: "fell",
+  },
   // Regression: an invalid share link shows a message instead of crashing.
   { name: "invalid-link", params: { tieZMm: 5000 }, display: {}, expectNoSim: true },
   // Images for the README (docs/images): parameter panel collapsed.

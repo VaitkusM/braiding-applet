@@ -28,15 +28,16 @@ the mandrel and the mechanics of the yarns.
   - Contact pressure $p=T\kappa_n$ and the slip criterion $|\kappa_g|\le\mu\kappa_n$.
   - Cover factor and jamming.
 - **Interlacing.** Crossings are detected on the mandrel, and over/under is decided by the carriers'
-  horn-gear sides. The rendered undulation follows from this.
+  horn-gear sides. The rendered undulation follows from this. Laid yarns are drawn as lines, like
+  the free yarns (default), or as flat tapes of the real yarn width.
 - **Analysis.**
   - Live plots of braid angle, convergence length, curvatures, slip ratio and cover factor.
   - A theory panel with formulas and live values.
   - Colour modes, CSV/PNG export, and share links (all parameters are kept in the URL).
 
-| Fell zone (triaxial braid on a bulge)   | Interlacing (diamond 1/1)                   |
-| --------------------------------------- | ------------------------------------------- |
-| ![Fell zone](docs/images/fell-zone.jpg) | ![Interlacing](docs/images/interlacing.jpg) |
+| Fell zone (triaxial braid on a bulge)   | Interlacing (diamond 1/1, flat-tape drawing) |
+| --------------------------------------- | -------------------------------------------- |
+| ![Fell zone](docs/images/fell-zone.jpg) | ![Interlacing](docs/images/interlacing.jpg)  |
 
 ![Theory panel with live values](docs/images/theory.jpg)
 

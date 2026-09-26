@@ -1,24 +1,30 @@
 /**
- * @file yarnView.js — deposited yarns as flat elliptical tapes (custom BufferGeometry), in the
- * MANDREL frame (the group is a child of the mandrel group).
+ * @file yarnView.js — deposited yarns, in the MANDREL frame (the group is a child of the mandrel
+ * group). Two drawing styles share one controller:
+ *  - "line": fat screen-space lines, drawn exactly like the free yarns (LineSegments2, same width);
+ *  - "tape": flat elliptical tapes of the real yarn width (custom BufferGeometry).
  *
- * Each yarn is a sequence of RINGS (cross-sections) at selected path samples. A ring's frame comes
- * from the surface — normal n and yarn tangent t stored with the sample, b = n × t — so the tape
- * lies flat on the mandrel (TubeGeometry's Frenet frames would twist it). The ring centre is lifted
- * along n by the undulation height t_y·(c + a·σ̃(s)), where σ̃ is the smoothed over/under side from
- * crossings.js; at every crossing the two yarns get opposite σ̃ = ±1, so they never interpenetrate
- * there. (Near side changes of dense, nearly jammed braids some clipping of flat tapes is
- * unavoidable — documented in docs/THEORY.md.)
+ * Each yarn is a sequence of RINGS at selected path samples. A ring's frame comes from the
+ * surface — normal n and yarn tangent t stored with the sample, b = n × t — so tapes lie flat on
+ * the mandrel (TubeGeometry's Frenet frames would twist them). The ring centre is lifted along n by
+ * the undulation height t_y·(c + a·σ̃(s)), where σ̃ is the smoothed over/under side from
+ * crossings.js; at every crossing the two yarns get opposite σ̃ = ±1, so the upper one is drawn on
+ * top (lines: by depth; tapes: they never interpenetrate there). Near side changes of dense, nearly
+ * jammed braids some clipping of flat tapes is unavoidable (docs/THEORY.md §10).
  *
  * Buffers are preallocated and grown by doubling; per frame only new/changed rings are written
- * (addUpdateRange) and the draw range is extended. The newest ring (the "tail", at the current fell
+ * (addUpdateRange) and the drawn range is extended. The newest ring (the "tail", at the current fell
  * point) is rewritten every frame.
  *
  * Level of detail: ring spacing ≈ crossing spacing / 6, clamped to [0.5, 3] mm. If the estimated
- * vertex count exceeds the budget, undulation is switched off (flat, layered tapes, 2 mm spacing).
+ * vertex count exceeds the budget, undulation is switched off (layered, "+" on top) and the spacing
+ * grows until the budget is met.
  */
 
 import * as THREE from "three";
+import { LineSegments2 } from "three/addons/lines/LineSegments2.js";
+import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js";
+import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import {
   AXIAL_COLOR,
   diverging,
@@ -33,8 +39,15 @@ import { FLAG } from "../core/yarnPath.js";
 /** @typedef {import("../core/simulation.js").Simulation} Simulation */
 /** @typedef {import("../core/yarnPath.js").YarnPath} YarnPath */
 
-const NSEG = 8; // vertices per cross-section
+const NSEG = 8; // vertices per tape cross-section
 const VERTEX_BUDGET = 1.5e6;
+/** Width of yarn lines in CSS pixels — shared with the free yarns (machineView.js). */
+export const YARN_LINE_WIDTH = 1.4;
+/** Drawing styles of the deposited yarns. */
+export const YARN_STYLES = Object.freeze({
+  line: "Lines (like the free yarns)",
+  tape: "Flat tapes",
+});
 const lin = (rgb) => rgb.map(srgbToLinear);
 const hexLin = (hex) => lin(hexToRgb(hex));
 
@@ -57,13 +70,24 @@ export class YarnView {
   constructor(sim, opts) {
     this.sim = sim;
     this.group = new THREE.Group();
-    this.material = new THREE.MeshStandardMaterial({
-      vertexColors: true,
-      roughness: 0.62,
-      metalness: 0.02,
-    });
-    this.selectedMaterial = this.material.clone();
-    this.selectedMaterial.emissive = new THREE.Color(0x3a3a3a);
+    /** "line" | "tape" */
+    this.style = opts.style ?? "line";
+    if (this.style === "tape") {
+      this.material = new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.62,
+        metalness: 0.02,
+      });
+      this.selectedMaterial = this.material.clone();
+      this.selectedMaterial.emissive = new THREE.Color(0x3a3a3a);
+    } else {
+      this.material = new LineMaterial({ vertexColors: true, linewidth: YARN_LINE_WIDTH });
+      this.selectedMaterial = new LineMaterial({
+        vertexColors: true,
+        linewidth: 2.5 * YARN_LINE_WIDTH,
+      });
+    }
+    const vertsPerRing = this.style === "tape" ? NSEG : 2;
 
     const c = sim.config, prof = sim.profile;
     this.thickness = c.yarnThickness * opts.thicknessScale;
@@ -87,9 +111,9 @@ export class YarnView {
     }
     const pathLen = prof.length / Math.max(cosMin, 1e-3);
     const nYarns = sim.yarns.length + sim.axialYarns.length;
-    this.undulate = nYarns * (pathLen / ds) * NSEG <= VERTEX_BUDGET;
-    // Too many vertices: flat layered tapes, with the ring spacing that meets the budget.
-    if (!this.undulate) ds = Math.max(ds, 2e-3, (nYarns * pathLen * NSEG) / VERTEX_BUDGET);
+    this.undulate = nYarns * (pathLen / ds) * vertsPerRing <= VERTEX_BUDGET;
+    // Too many vertices: layered yarns without undulation, with the spacing that meets the budget.
+    if (!this.undulate) ds = Math.max(ds, 2e-3, (nYarns * pathLen * vertsPerRing) / VERTEX_BUDGET);
     this.ringSpacing = ds;
     this.capacityHint = Math.ceil((pathLen / ds) * 1.1) + 16;
 
@@ -106,15 +130,16 @@ export class YarnView {
     this.applySelection();
   }
 
-  /** Creates the mesh + bookkeeping for one yarn. */
+  /** Creates the drawable + bookkeeping for one yarn. */
   makeEntry(path, events, k) {
-    const geo = new THREE.BufferGeometry();
+    const draw = this.style === "tape"
+      ? new TapeDrawable(this.material)
+      : new LineDrawable(this.material);
     const e = {
       path,
       events,
       k,
-      geo,
-      mesh: new THREE.Mesh(geo, this.material),
+      draw,
       cap: 0,
       rings: [], // sample index of each committed ring
       ringArc: [], // arc position of each committed ring
@@ -122,49 +147,16 @@ export class YarnView {
       centers: null, // ring centres (for picking)
       written: 0, // rings written so far (committed + tail)
     };
-    e.mesh.frustumCulled = false;
     this.allocate(e, this.capacityHint);
-    this.group.add(e.mesh);
+    this.group.add(draw.object);
     return e;
   }
 
   /** (Re)allocates buffers for `cap` rings, preserving existing contents. */
   allocate(e, cap) {
-    const pos = new Float32Array(cap * NSEG * 3), nor = new Float32Array(cap * NSEG * 3);
-    const col = new Float32Array(cap * NSEG * 3), centers = new Float32Array(cap * 3);
-    if (e.cap) {
-      pos.set(e.geo.getAttribute("position").array);
-      nor.set(e.geo.getAttribute("normal").array);
-      col.set(e.geo.getAttribute("color").array);
-      centers.set(e.centers);
-      // Replacing attributes would leave the old GL buffers alive: use a fresh geometry instead.
-      const old = e.geo;
-      e.geo = new THREE.BufferGeometry();
-      e.mesh.geometry = e.geo;
-      e.geo.setDrawRange(0, old.drawRange.count);
-      old.dispose();
-    }
-    const idx = new Uint32Array((cap - 1) * NSEG * 6);
-    let o = 0;
-    for (let r = 0; r < cap - 1; r++) {
-      for (let k = 0; k < NSEG; k++) {
-        const a = r * NSEG + k, b = r * NSEG + ((k + 1) % NSEG);
-        const c = a + NSEG, d = b + NSEG;
-        // (b − a) × (c − a) ∝ n × t = +b at φ = 0: triangles face outwards.
-        idx[o++] = a;
-        idx[o++] = b;
-        idx[o++] = c;
-        idx[o++] = b;
-        idx[o++] = d;
-        idx[o++] = c;
-      }
-    }
-    for (const [name, arr] of [["position", pos], ["normal", nor], ["color", col]]) {
-      const attr = new THREE.BufferAttribute(arr, 3);
-      attr.setUsage(THREE.DynamicDrawUsage);
-      e.geo.setAttribute(name, attr);
-    }
-    e.geo.setIndex(new THREE.BufferAttribute(idx, 1));
+    const centers = new Float32Array(cap * 3);
+    if (e.cap) centers.set(e.centers);
+    e.draw.allocate(cap);
     e.centers = centers;
     e.cap = cap;
     e.fullUpload = true;
@@ -207,21 +199,10 @@ export class YarnView {
     for (let r = from; r < total; r++) {
       this.writeRing(e, r, r < e.rings.length ? e.rings[r] : n - 1);
     }
-    this.markUpdated(e, from, total);
-    e.written = total;
-    e.geo.setDrawRange(0, Math.max(0, total - 1) * NSEG * 6);
-  }
-
-  /** Flags GPU upload of the ring range [from, to). */
-  markUpdated(e, from, to) {
-    for (const name of ["position", "normal", "color"]) {
-      const attr = e.geo.getAttribute(name);
-      attr.clearUpdateRanges();
-      if (!e.fullUpload) attr.addUpdateRange(from * NSEG * 3, (to - from) * NSEG * 3);
-      attr.needsUpdate = true;
-    }
-    if (e.fullUpload) e.geo.getIndex().needsUpdate = true;
+    e.draw.markUpdated(from, total, e.fullUpload);
     e.fullUpload = false;
+    e.written = total;
+    e.draw.setRingCount(total);
   }
 
   /** Undulation side σ̃ at arc position s of yarn entry e. */
@@ -243,25 +224,8 @@ export class YarnView {
     const h = T * (e.k < 0 ? this.c : this.c + this.a * this.sideAt(e, y.arc[i]));
     const C = [y.x[i] + h * n[0], y.y[i] + h * n[1], y.z[i] + h * n[2]];
     e.centers.set(C, 3 * r);
-    const hw = (e.k < 0 ? this.axialWidth : this.width) / 2, ht = T / 2;
-    const col = this.colorOf(e, i);
-    const pos = e.geo.getAttribute("position").array;
-    const nor = e.geo.getAttribute("normal").array;
-    const cols = e.geo.getAttribute("color").array;
-    for (let k = 0; k < NSEG; k++) {
-      const phi = (2 * Math.PI * k) / NSEG;
-      const cb = Math.cos(phi), sn = Math.sin(phi);
-      const o = (r * NSEG + k) * 3;
-      for (let d = 0; d < 3; d++) {
-        pos[o + d] = C[d] + hw * cb * b[d] + ht * sn * n[d];
-        nor[o + d] = (cb / hw) * b[d] + (sn / ht) * n[d];
-        cols[o + d] = col[d];
-      }
-      const l = Math.hypot(nor[o], nor[o + 1], nor[o + 2]);
-      nor[o] /= l;
-      nor[o + 1] /= l;
-      nor[o + 2] /= l;
-    }
+    const hw = (e.k < 0 ? this.axialWidth : this.width) / 2;
+    e.draw.writeRing(r, C, n, b, this.colorOf(e, i), hw, T / 2);
   }
 
   /** Linear-RGB colour of sample i of entry e for the current colour mode. */
@@ -376,14 +340,10 @@ export class YarnView {
   setColorMode(mode) {
     this.colorMode = mode;
     for (const e of this.entries) {
-      const cols = e.geo.getAttribute("color");
       const total = e.rings.length + 1;
       for (let r = 0; r < total && e.path.count; r++) {
-        const col = this.colorOf(e, r < e.rings.length ? e.rings[r] : e.path.count - 1);
-        for (let k = 0; k < NSEG; k++) cols.setXYZ(r * NSEG + k, col[0], col[1], col[2]);
+        e.draw.writeColor(r, this.colorOf(e, r < e.rings.length ? e.rings[r] : e.path.count - 1));
       }
-      cols.clearUpdateRanges();
-      cols.needsUpdate = true;
       e.fullUpload = true; // the next sync must upload everything, not just the newest rings
     }
   }
@@ -395,9 +355,9 @@ export class YarnView {
   }
 
   applySelection() {
-    this.entries.forEach((
-      e,
-    ) => (e.mesh.material = e.k === this.selected ? this.selectedMaterial : this.material));
+    for (const e of this.entries) {
+      e.draw.object.material = e.k === this.selected ? this.selectedMaterial : this.material;
+    }
   }
 
   /**
@@ -430,10 +390,182 @@ export class YarnView {
     return best;
   }
 
+  /** Line materials need the viewport size in pixels (no-op for tapes). */
+  setResolution(w, h) {
+    if (this.style === "line") {
+      this.material.resolution.set(w, h);
+      this.selectedMaterial.resolution.set(w, h);
+    }
+  }
+
   dispose() {
-    for (const e of this.entries) e.geo.dispose();
+    for (const e of this.entries) e.draw.dispose();
     this.material.dispose();
     this.selectedMaterial.dispose();
+  }
+}
+
+// ── Drawables: the geometry of one yarn in one style ────────────────────────────────────────────
+// Interface: object (THREE.Object3D) · allocate(cap) keeps existing content · writeRing(r, C, n, b,
+// colour, halfWidth, halfThickness) · writeColor(r, colour) · setRingCount(n) ·
+// markUpdated(from, to, full) · dispose().
+
+/** Flat elliptical tape: NSEG vertices per ring, quads between consecutive rings. */
+class TapeDrawable {
+  constructor(material) {
+    this.geo = new THREE.BufferGeometry();
+    this.object = new THREE.Mesh(this.geo, material);
+    this.object.frustumCulled = false;
+    this.cap = 0;
+  }
+
+  allocate(cap) {
+    const pos = new Float32Array(cap * NSEG * 3), nor = new Float32Array(cap * NSEG * 3);
+    const col = new Float32Array(cap * NSEG * 3);
+    if (this.cap) {
+      pos.set(this.geo.getAttribute("position").array);
+      nor.set(this.geo.getAttribute("normal").array);
+      col.set(this.geo.getAttribute("color").array);
+      // Replacing attributes would leave the old GL buffers alive: use a fresh geometry instead.
+      const old = this.geo;
+      this.geo = new THREE.BufferGeometry();
+      this.object.geometry = this.geo;
+      this.geo.setDrawRange(0, old.drawRange.count);
+      old.dispose();
+    }
+    const idx = new Uint32Array((cap - 1) * NSEG * 6);
+    let o = 0;
+    for (let r = 0; r < cap - 1; r++) {
+      for (let k = 0; k < NSEG; k++) {
+        const a = r * NSEG + k, b = r * NSEG + ((k + 1) % NSEG);
+        const c = a + NSEG, d = b + NSEG;
+        // (b − a) × (c − a) ∝ n × t = +b at φ = 0: triangles face outwards.
+        idx[o++] = a;
+        idx[o++] = b;
+        idx[o++] = c;
+        idx[o++] = b;
+        idx[o++] = d;
+        idx[o++] = c;
+      }
+    }
+    for (const [name, arr] of [["position", pos], ["normal", nor], ["color", col]]) {
+      const attr = new THREE.BufferAttribute(arr, 3);
+      attr.setUsage(THREE.DynamicDrawUsage);
+      this.geo.setAttribute(name, attr);
+    }
+    this.geo.setIndex(new THREE.BufferAttribute(idx, 1));
+    this.cap = cap;
+  }
+
+  writeRing(r, C, n, b, col, hw, ht) {
+    const pos = this.geo.getAttribute("position").array;
+    const nor = this.geo.getAttribute("normal").array;
+    const cols = this.geo.getAttribute("color").array;
+    for (let k = 0; k < NSEG; k++) {
+      const phi = (2 * Math.PI * k) / NSEG;
+      const cb = Math.cos(phi), sn = Math.sin(phi);
+      const o = (r * NSEG + k) * 3;
+      for (let d = 0; d < 3; d++) {
+        pos[o + d] = C[d] + hw * cb * b[d] + ht * sn * n[d];
+        nor[o + d] = (cb / hw) * b[d] + (sn / ht) * n[d];
+        cols[o + d] = col[d];
+      }
+      const l = Math.hypot(nor[o], nor[o + 1], nor[o + 2]);
+      nor[o] /= l;
+      nor[o + 1] /= l;
+      nor[o + 2] /= l;
+    }
+  }
+
+  writeColor(r, col) {
+    const cols = this.geo.getAttribute("color");
+    for (let k = 0; k < NSEG; k++) cols.setXYZ(r * NSEG + k, col[0], col[1], col[2]);
+  }
+
+  setRingCount(n) {
+    this.geo.setDrawRange(0, Math.max(0, n - 1) * NSEG * 6);
+  }
+
+  markUpdated(from, to, full) {
+    for (const name of ["position", "normal", "color"]) {
+      const attr = this.geo.getAttribute(name);
+      attr.clearUpdateRanges();
+      if (!full) attr.addUpdateRange(from * NSEG * 3, (to - from) * NSEG * 3);
+      attr.needsUpdate = true;
+    }
+    if (full) this.geo.getIndex().needsUpdate = true;
+  }
+
+  dispose() {
+    this.geo.dispose();
+  }
+}
+
+/**
+ * Fat screen-space line through the ring centres, drawn like the free yarns. Segment s joins
+ * ring s and ring s + 1; each segment stores its two end points (and colours), so writing ring r
+ * touches the end of segment r − 1 and the start of segment r.
+ */
+class LineDrawable {
+  constructor(material) {
+    this.geo = new LineSegmentsGeometry();
+    this.object = new LineSegments2(this.geo, material);
+    this.object.frustumCulled = false;
+    this.cap = 0;
+  }
+
+  allocate(cap) {
+    const pos = new Float32Array((cap - 1) * 6), col = new Float32Array((cap - 1) * 6);
+    if (this.cap) {
+      pos.set(this.pos);
+      col.set(this.col);
+      const old = this.geo;
+      this.geo = new LineSegmentsGeometry();
+      this.object.geometry = this.geo;
+      old.dispose();
+    }
+    // setPositions / setColors wrap these arrays (no copy), so they can be updated in place.
+    this.geo.setPositions(pos);
+    this.geo.setColors(col);
+    this.pos = pos;
+    this.col = col;
+    this.cap = cap;
+    this.geo.instanceCount = 0;
+  }
+
+  /** Writes 3 floats of ring r into the start of segment r and the end of segment r − 1. */
+  put(arr, r, v) {
+    if (r < this.cap - 1) arr.set(v, 6 * r);
+    if (r > 0) arr.set(v, 6 * (r - 1) + 3);
+  }
+
+  writeRing(r, C, _n, _b, col) {
+    this.put(this.pos, r, C);
+    this.put(this.col, r, col);
+  }
+
+  writeColor(r, col) {
+    this.put(this.col, r, col);
+  }
+
+  setRingCount(n) {
+    this.geo.instanceCount = Math.max(0, n - 1);
+  }
+
+  markUpdated(from, to, full) {
+    for (const name of ["instanceStart", "instanceColorStart"]) {
+      const buf = this.geo.attributes[name].data;
+      buf.clearUpdateRanges();
+      if (!full) {
+        const s0 = Math.max(0, from - 1) * 6, s1 = Math.min(this.cap - 1, to) * 6;
+        if (s1 > s0) buf.addUpdateRange(s0, s1 - s0);
+      }
+      buf.needsUpdate = true;
+    }
+  }
+
+  dispose() {
+    this.geo.dispose();
   }
 }
 

@@ -67,14 +67,14 @@ are exact rotated copies, written into `yarns` as they are deposited. Views don'
 
 ## View modules (`src/view/`)
 
-| Module           | Responsibility                                                                                                                                                       |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scene.js`       | Renderer (ACES tone mapping, RoomEnvironment), camera, OrbitControls, camera presets, projection helper                                                              |
-| `mandrelView.js` | Lathe mesh with optional K/H colouring, end caps, shaft; owns the mandrel group (pose matrix)                                                                        |
-| `machineView.js` | Track plate, instanced horn gears and carriers, figure-eight paths, guide ring, free yarns (`LineSegments2`)                                                         |
-| `yarnView.js`    | Yarn tapes: custom `BufferGeometry` per yarn, surface-framed flat ellipse cross-sections, crossing-based undulation, incremental updates, LOD, colour modes, picking |
-| `overlayView.js` | Fell line, Darboux frame and principal-direction arrows, geodesic from the selected fell point, HTML vector labels                                                   |
-| `colormaps.js`   | Validated palette: categorical slots, sequential blue ramp, blue–gray–red diverging (OKLab), status colours                                                          |
+| Module           | Responsibility                                                                                                                                                                                                                                       |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scene.js`       | Renderer (ACES tone mapping, RoomEnvironment), camera, OrbitControls, camera presets, projection helper                                                                                                                                              |
+| `mandrelView.js` | Lathe mesh with optional K/H colouring, end caps, shaft; owns the mandrel group (pose matrix)                                                                                                                                                        |
+| `machineView.js` | Track plate, instanced horn gears and carriers, figure-eight paths, guide ring, free yarns (`LineSegments2`)                                                                                                                                         |
+| `yarnView.js`    | Deposited yarns: one controller (ring commits, crossing-based undulation, incremental updates, LOD, colour modes, picking) with two drawables, fat lines like the free yarns (`LineDrawable`, default) or surface-framed flat tapes (`TapeDrawable`) |
+| `overlayView.js` | Fell line, Darboux frame and principal-direction arrows, geodesic from the selected fell point, HTML vector labels                                                                                                                                   |
+| `colormaps.js`   | Validated palette: categorical slots, sequential blue ramp, blue–gray–red diverging (OKLab), status colours                                                                                                                                          |
 
 ## UI modules (`src/ui/`)
 

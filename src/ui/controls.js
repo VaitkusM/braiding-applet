@@ -10,7 +10,7 @@
 import GUI from "lil-gui";
 import { allowedCarrierCounts, PATTERNS } from "../core/machine.js";
 import { MANDREL_LABELS, patternM, SHAPE_RANGES } from "../params.js";
-import { YARN_COLOR_MODES } from "../view/yarnView.js";
+import { YARN_COLOR_MODES, YARN_STYLES } from "../view/yarnView.js";
 
 const SHAPE_LABELS = {
   length: "length [mm]",
@@ -92,6 +92,10 @@ export class Controls {
     // ── Display ──
     const fv = gui.addFolder("Display").close();
     const yarnModes = Object.fromEntries(Object.entries(YARN_COLOR_MODES).map(([k, v]) => [v, k]));
+    const styles = Object.fromEntries(Object.entries(YARN_STYLES).map(([k, v]) => [v, k]));
+    fv.add(d, "yarnStyle", styles).name("yarn drawing").onChange(() =>
+      this.cb.onDisplay("yarnStyle")
+    );
     fv.add(d, "yarnColor", yarnModes).name("yarn colour").onChange(() =>
       this.cb.onDisplay("yarnColor")
     );
