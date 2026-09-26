@@ -20,7 +20,8 @@ import {
   validateParams,
 } from "./params.js";
 import { SceneView } from "./view/scene.js";
-import { MandrelView } from "./view/mandrelView.js";
+import { DEFAULT_FLAT_COLOR, MandrelView } from "./view/mandrelView.js";
+import { orderBounds, snap, YARN_SCALES } from "./view/scales.js";
 import { MachineView } from "./view/machineView.js";
 import { YarnView } from "./view/yarnView.js";
 import { OverlayView } from "./view/overlayView.js";
@@ -43,11 +44,12 @@ export class App {
     validateParams(this.params);
     this.display = {
       yarnColor: "family",
-      alphaScale: "data", // braid-angle colour scale: "data" | "custom" | "full"
-      alphaMin: 30, // custom range [°]
-      alphaMid: 45,
-      alphaMax: 60,
-      mandrelColor: "metal",
+      // Colour scale per scalar yarn colouring: { mode: "data" | "custom" | "full", min, mid, max }.
+      yarnScales: Object.fromEntries(Object.keys(YARN_SCALES).map((k) => [k, { mode: "data" }])),
+      mandrelColor: "metal", // "metal" | "flat" | "K" | "H"
+      mandrelFlatColor: DEFAULT_FLAT_COLOR,
+      // Colour scale of the curvature colourings of the mandrel: { mode: "auto" | "custom", … }.
+      mandrelScales: { K: { mode: "auto" }, H: { mode: "auto" } },
       yarnStyle: "line", // "line" (like the free yarns) | "tape"
       thicknessScale: 1.5,
       selectedYarn: 0,
@@ -70,6 +72,7 @@ export class App {
     this.controls = new Controls(doc.getElementById("gui-host"), this.params, this.display, {
       onParams: () => this.scheduleRebuild(),
       onDisplay: (key) => this.applyDisplay(key),
+      onScale: (target, what) => this.onScale(target, what),
       onAction: (name) => this.action(name),
     });
     this.panels = {
@@ -128,12 +131,15 @@ export class App {
     this.display.selectedYarn = Math.min(this.display.selectedYarn, sim.yarns.length - 1);
     this.controls.refresh(); // after the clamp, so the selected-yarn slider shows the real value
 
-    this.mandrelView = new MandrelView(sim);
+    this.mandrelView = new MandrelView(sim, {
+      flatColor: this.display.mandrelFlatColor,
+      scales: this.display.mandrelScales,
+    });
     this.yarnView = new YarnView(sim, {
       thicknessScale: this.display.thicknessScale,
       colorMode: this.display.yarnColor,
       style: this.display.yarnStyle,
-      alphaScale: this.alphaScaleSpec(),
+      scales: this.display.yarnScales,
     });
     this.overlayView = new OverlayView(sim, this.doc.getElementById("labels-host"));
     this.machineView = new MachineView(sim);
@@ -190,28 +196,18 @@ export class App {
     switch (key) {
       case "yarnColor":
         this.yarnView.setColorMode(d.yarnColor);
-        this.controls.updateAlphaScaleControls();
-        break;
-      case "alphaScale":
-        if (d.alphaScale === "custom" && !silent) {
-          // Start the custom sliders from the range currently shown.
-          const R = this.yarnView.alphaRange, r = (x) => Math.round(((x * 180) / Math.PI) * 2) / 2;
-          Object.assign(d, { alphaMin: r(R.min), alphaMid: r(R.mid), alphaMax: r(R.max) });
-        }
-        this.yarnView.setAlphaScale(this.alphaScaleSpec());
-        this.controls.updateAlphaScaleControls();
-        this.controls.refresh();
-        break;
-      case "alphaMin":
-      case "alphaMid":
-      case "alphaMax":
-        this.orderAlphaBounds(key);
-        this.yarnView.setAlphaScale(this.alphaScaleSpec());
-        this.controls.refresh();
+        this.syncScaleControls();
         break;
       case "mandrelColor":
         this.mandrelView.setColorMode(d.mandrelColor);
+        this.syncScaleControls();
         break;
+      case "mandrelFlatColor":
+        this.mandrelView.setFlatColor(d.mandrelFlatColor);
+        break;
+      case "yarnScales":
+      case "mandrelScales":
+        break; // passed to the views when they are built; edited through onScale()
       case "thicknessScale":
       case "yarnStyle":
         if (!silent) this.rebuildYarnView();
@@ -244,11 +240,12 @@ export class App {
       thicknessScale: this.display.thicknessScale,
       colorMode: this.display.yarnColor,
       style: this.display.yarnStyle,
-      alphaScale: this.alphaScaleSpec(),
+      scales: this.display.yarnScales,
     });
     this.yarnView.setSelected(this.display.selectedYarn);
     this.yarnView.setResolution(this.view.size.w, this.view.size.h);
     this.mandrelView.group.add(this.yarnView.group);
+    this.syncScaleControls();
   }
 
   select(k, silent = false) {
@@ -261,27 +258,55 @@ export class App {
     }
   }
 
-  /** Braid-angle scale settings for the yarn view (bounds in degrees). */
-  alphaScaleSpec() {
-    const d = this.display;
-    return { mode: d.alphaScale, min: d.alphaMin, mid: d.alphaMid, max: d.alphaMax };
+  /**
+   * A colour-scale control changed. `target` = "yarn" | "mandrel", `what` = "mode" | "min" | "mid" |
+   * "max". The scale spec of the current colouring is updated (custom bounds are kept ordered and
+   * on the slider grid) and pushed to the view; switching to "custom" starts from the range
+   * currently shown.
+   */
+  onScale(target, what) {
+    const yarn = target === "yarn";
+    const view = yarn ? this.yarnView : this.mandrelView;
+    const key = yarn ? this.display.yarnColor : this.display.mandrelColor;
+    const store = yarn ? this.display.yarnScales : this.display.mandrelScales;
+    const info = view?.scaleInfo(key);
+    if (!info) return;
+    const ui = this.controls.scaleUI[target], b = info.bounds;
+    let spec;
+    if (what === "mode") {
+      spec = { ...store[key], mode: ui.mode };
+      if (ui.mode === "custom") {
+        const R = info.range;
+        spec = orderBounds(
+          {
+            mode: "custom",
+            min: snap(R.min, b.step),
+            mid: snap(R.mid, b.step),
+            max: snap(R.max, b.step),
+          },
+          "mid",
+          b,
+        );
+      }
+    } else {
+      spec = orderBounds(
+        { ...store[key], mode: "custom", min: ui.min, mid: ui.mid, max: ui.max },
+        what,
+        b,
+      );
+    }
+    store[key] = spec;
+    view.setScale(key, spec);
+    this.syncScaleControls();
+    this.updateColorbar();
   }
 
-  /** Keeps min < mid < max (0.5° apart) after one custom bound was moved. */
-  orderAlphaBounds(moved) {
-    const d = this.display, g = 0.5;
-    d.alphaMin = Math.min(Math.max(d.alphaMin, 0), 90 - 2 * g);
-    d.alphaMax = Math.max(Math.min(d.alphaMax, 90), 2 * g);
-    d.alphaMid = Math.min(Math.max(d.alphaMid, 0), 90);
-    if (moved === "alphaMin") {
-      d.alphaMid = Math.max(d.alphaMid, d.alphaMin + g);
-      d.alphaMax = Math.max(d.alphaMax, d.alphaMid + g);
-    } else if (moved === "alphaMax") {
-      d.alphaMid = Math.min(d.alphaMid, d.alphaMax - g);
-      d.alphaMin = Math.min(d.alphaMin, d.alphaMid - g);
-    } else {
-      d.alphaMid = Math.min(Math.max(d.alphaMid, d.alphaMin + g), d.alphaMax - g);
-    }
+  /** Pushes the scale state of the current colourings to the controls. */
+  syncScaleControls() {
+    this.controls.syncScales(
+      this.yarnView?.scaleInfo() ?? null,
+      this.mandrelView?.scaleInfo() ?? null,
+    );
   }
 
   updateColorbar() {

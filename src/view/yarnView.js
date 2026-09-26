@@ -27,7 +27,6 @@ import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import {
   AXIAL_COLOR,
-  diverging,
   hexToRgb,
   pivotScale,
   sequential,
@@ -36,6 +35,7 @@ import {
   STATUS,
 } from "./colormaps.js";
 import { FLAG } from "../core/yarnPath.js";
+import { curvatureRanges, RangeTracker, sliderBounds, YARN_SCALES, yarnRange } from "./scales.js";
 
 /** @typedef {import("../core/simulation.js").Simulation} Simulation */
 /** @typedef {import("../core/yarnPath.js").YarnPath} YarnPath */
@@ -48,13 +48,6 @@ export const YARN_LINE_WIDTH = 1.4;
 export const YARN_STYLES = Object.freeze({
   line: "Lines (like the free yarns)",
   tape: "Flat tapes",
-});
-const DEG = Math.PI / 180;
-/** Braid-angle colour scales (see YarnView.setAlphaScale). */
-export const ALPHA_SCALES = Object.freeze({
-  data: "Range of this run (auto)",
-  custom: "Custom range (min / mid / max)",
-  full: "Full range 0–90°",
 });
 const lin = (rgb) => rgb.map(srgbToLinear);
 const hexLin = (hex) => lin(hexToRgb(hex));
@@ -131,11 +124,15 @@ export class YarnView {
     this.a = this.triaxial ? 1.0 : 0.5;
 
     this.colorMode = opts.colorMode;
-    // Braid-angle colour scale: mode + custom bounds [°]; the effective range is in radians.
-    this.alphaScale = { mode: "data", min: 0, mid: 45, max: 90, ...opts.alphaScale };
-    this.dataMin = Infinity; // |α| range of the deposited bias yarns (rings written so far)
-    this.dataMax = -Infinity;
-    this.alphaRange = this.effectiveAlphaRange();
+    // Scalar colourings (scales.js): one scale spec per colouring, the running data ranges of the
+    // bias yarns, and the effective range of the current colouring (null if it has no scale).
+    this.scaleCtx = { mu: c.friction, tension: c.tension, ...curvatureRanges(prof) };
+    this.scales = {};
+    for (const k of Object.keys(YARN_SCALES)) {
+      this.scales[k] = { mode: "data", ...opts.scales?.[k] };
+    }
+    this.tracker = new RangeTracker();
+    this.range = this.effectiveRange();
     this.lastRangeUpdate = -Infinity;
     /** Incremented whenever the legend (colour-bar ticks) changes. */
     this.legendVersion = 0;
@@ -181,49 +178,65 @@ export class YarnView {
   /** Brings every yarn mesh up to date with the simulation. */
   update() {
     for (const e of this.entries) this.sync(e);
-    if (this.alphaScale.mode === "data") this.followDataRange();
+    if (this.scales[this.colorMode]?.mode === "data") this.followDataRange();
   }
 
   /**
-   * Effective braid-angle range {min, mid, max} [rad] for the current scale mode. The data range
-   * falls back to the full range until yarn has been deposited; a span below 1° is widened.
+   * Effective range {min, mid, max} (display units) of colouring `key` (default: the current one),
+   * or null if that colouring has no continuous scale.
    */
-  effectiveAlphaRange() {
-    const s = this.alphaScale;
-    if (s.mode === "custom") return { min: s.min * DEG, mid: s.mid * DEG, max: s.max * DEG };
-    if (s.mode === "data" && this.dataMax >= this.dataMin) {
-      const lo = this.dataMin, hi = Math.max(this.dataMax, lo + DEG);
-      return { min: lo, mid: 0.5 * (lo + hi), max: hi };
-    }
-    return { min: 0, mid: 45 * DEG, max: 90 * DEG };
+  effectiveRange(key = this.colorMode) {
+    if (!YARN_SCALES[key]) return null;
+    return yarnRange(key, this.scales[key], this.tracker.get(key), this.scaleCtx);
   }
 
   /**
-   * Data-range mode: follows the growing |α| range of the run. Recolours only when a bound has moved
-   * by more than 2 % of the span (at least 0.25°), and at most every 300 ms.
+   * Data-range mode: follows the growing range of the run. Recolours only when a bound has moved by
+   * more than 2 % of the span, and at most every 300 ms.
    */
   followDataRange() {
-    const next = this.effectiveAlphaRange(), cur = this.alphaRange;
-    const tol = Math.max(0.02 * (next.max - next.min), 0.25 * DEG);
-    if (Math.abs(next.min - cur.min) < tol && Math.abs(next.max - cur.max) < tol) return;
+    const next = this.effectiveRange(), cur = this.range;
+    const tol = 0.02 * (next.max - next.min);
+    if (
+      Math.abs(next.min - cur.min) <= tol && Math.abs(next.max - cur.max) <= tol &&
+      Math.abs(next.mid - cur.mid) <= tol
+    ) return;
     const now = performance.now();
     if (now - this.lastRangeUpdate < 300) return;
     this.lastRangeUpdate = now;
-    this.alphaRange = next;
-    if (this.colorMode === "alpha") this.recolorAll();
+    this.range = next;
+    this.recolorAll();
     this.legendVersion++;
   }
 
   /**
-   * Sets the braid-angle colour scale.
-   * @param {{mode:"data"|"custom"|"full", min?:number, mid?:number, max?:number}} s bounds in degrees
+   * Sets the colour scale of colouring `key`.
+   * @param {string} key @param {import("./scales.js").ScaleSpec} spec (bounds in display units)
    */
-  setAlphaScale(s) {
-    this.alphaScale = { ...this.alphaScale, ...s };
-    this.alphaRange = this.effectiveAlphaRange();
+  setScale(key, spec) {
+    this.scales[key] = { ...this.scales[key], ...spec };
+    if (key !== this.colorMode) return;
+    this.range = this.effectiveRange();
     this.lastRangeUpdate = performance.now();
-    if (this.colorMode === "alpha") this.recolorAll();
+    this.recolorAll();
     this.legendVersion++;
+  }
+
+  /**
+   * Scale information for the controls: effective range, full range, slider bounds, unit.
+   * @param {string} [key] colouring (default: current); null if it has no scale
+   */
+  scaleInfo(key = this.colorMode) {
+    const def = YARN_SCALES[key];
+    if (!def) return null;
+    const range = this.effectiveRange(key), full = def.full(this.scaleCtx);
+    return {
+      spec: this.scales[key],
+      range,
+      full,
+      bounds: sliderBounds(full, range),
+      unit: def.unit,
+    };
   }
 
   /** Incremental update of one yarn. */
@@ -284,56 +297,68 @@ export class YarnView {
     const C = [y.x[i] + h * n[0], y.y[i] + h * n[1], y.z[i] + h * n[2]];
     e.centers.set(C, 3 * r);
     const hw = (e.k < 0 ? this.axialWidth : this.width) / 2;
-    if (e.k >= 0 && !(y.flags[i] & FLAG.TIE)) {
-      const a = Math.abs(y.alpha[i]);
-      if (a < this.dataMin) this.dataMin = a;
-      if (a > this.dataMax) this.dataMax = a;
-    }
+    // Data ranges: drawn samples of the bias yarns (tie points and axial yarns excluded).
+    if (e.k >= 0 && !(y.flags[i] & FLAG.TIE)) this.tracker.add(y, i, this.scaleCtx);
     e.draw.writeRing(r, C, n, b, this.colorOf(e, i), hw, T / 2);
   }
 
   /** Linear-RGB colour of sample i of entry e for the current colour mode. */
   colorOf(e, i) {
-    const y = e.path, c = this.sim.config, rMin = this.sim.profile.rMin;
+    const y = e.path, mode = this.colorMode;
     const neutral = hexLin("#898781");
-    if (e.k < 0 && this.colorMode === "family") return hexLin(AXIAL_COLOR);
-    switch (this.colorMode) {
-      case "family":
-        return hexLin(y.family === 1 ? SERIES.plus : SERIES.minus);
-      case "alpha": {
-        const R = this.alphaRange;
-        return lin(sequential(pivotScale(Math.abs(y.alpha[i]), R.min, R.mid, R.max)));
-      }
-      case "slip": {
-        // Status first (also for μ = 0), then the ratio |κg/κn| / μ on the sequential scale.
-        const r = Math.abs(y.slip[i]);
-        if (!Number.isFinite(r)) return neutral;
-        if (r > c.friction) return hexLin(STATUS.critical);
-        return lin(sequential(c.friction > 0 ? r / c.friction : 0));
-      }
-      case "kn":
-        return Number.isFinite(y.kn[i]) ? lin(sequential(y.kn[i] * rMin)) : neutral;
-      case "kg":
-        return Number.isFinite(y.kg[i]) ? lin(diverging(y.kg[i] * rMin * 2)) : neutral;
-      case "pressure":
-        return Number.isFinite(y.kn[i])
-          ? lin(sequential(y.kn[i] * rMin)) // p / p_max = T κn / (T / r_min)
-          : neutral;
-      case "flags": {
-        const f = y.flags[i];
-        if (f & FLAG.SLIP) return hexLin(STATUS.critical);
-        if (f & (FLAG.BRIDGE | FLAG.CONTACT | FLAG.LIFTOFF)) return hexLin(STATUS.serious);
-        if (f & FLAG.JAM) return hexLin(STATUS.warning);
-        return hexLin("#5d5c58");
-      }
-      default:
-        return neutral;
+    if (mode === "family") {
+      if (e.k < 0) return hexLin(AXIAL_COLOR);
+      return hexLin(y.family === 1 ? SERIES.plus : SERIES.minus);
     }
+    if (mode === "flags") {
+      const f = y.flags[i];
+      if (f & FLAG.SLIP) return hexLin(STATUS.critical);
+      if (f & (FLAG.BRIDGE | FLAG.CONTACT | FLAG.LIFTOFF)) return hexLin(STATUS.serious);
+      if (f & FLAG.JAM) return hexLin(STATUS.warning);
+      return hexLin("#5d5c58");
+    }
+    const def = YARN_SCALES[mode];
+    if (!def) return neutral;
+    if (mode === "slip") {
+      // Status first (also for μ = 0): friction cannot hold the path.
+      const r = Math.abs(y.slip[i]);
+      if (!Number.isFinite(r)) return neutral;
+      if (r > this.scaleCtx.mu) return hexLin(STATUS.critical);
+    }
+    const v = def.value(y, i, this.scaleCtx), R = this.range;
+    return Number.isFinite(v) ? lin(sequential(pivotScale(v, R.min, R.mid, R.max))) : neutral;
   }
 
   /** Colour-bar description for the current mode (see ui/colorbar in app.js). */
   legend() {
-    const c = this.sim.config, rMin = this.sim.profile.rMin;
+    const def = YARN_SCALES[this.colorMode];
+    if (def) {
+      const R = this.range, s = this.scales[this.colorMode];
+      const what =
+        { data: "range of this run", custom: "custom range", full: "full range" }[s.mode];
+      const extra = this.colorMode === "slip"
+        ? ` = ${this.scaleCtx.mu}`
+        : this.colorMode === "pressure"
+        ? ` (T = ${this.scaleCtx.tension} N)`
+        : "";
+      return {
+        title: `${def.label}${extra} · ${what}`,
+        unit: def.unit,
+        kind: "sequential",
+        min: R.min,
+        mid: R.mid,
+        max: R.max,
+        // κg and the slip ratio are undefined at tie points and bridge ends (drawn gray).
+        keys: this.colorMode === "slip"
+          ? [
+            { color: STATUS.critical, label: "slips (|κg| > μ κn)" },
+            { color: "#898781", label: "undefined (tie / bridge)" },
+          ]
+          : this.colorMode === "kg"
+          ? [{ color: "#898781", label: "undefined (tie / bridge)" }]
+          : undefined,
+      };
+    }
     switch (this.colorMode) {
       case "family":
         return {
@@ -343,54 +368,6 @@ export class YarnView {
             { color: SERIES.minus, label: "− family (clockwise carriers)" },
             ...(this.triaxial ? [{ color: AXIAL_COLOR, label: "axial yarns" }] : []),
           ],
-        };
-      case "alpha": {
-        const R = this.alphaRange;
-        const what = { data: "range of this run", custom: "custom range", full: "full range" };
-        return {
-          title: `Braid angle |α| from the meridian · ${what[this.alphaScale.mode]}`,
-          unit: "°",
-          kind: "sequential",
-          min: R.min / DEG,
-          mid: R.mid / DEG,
-          max: R.max / DEG,
-        };
-      }
-      case "slip":
-        return {
-          title: `Slip ratio |κg/κn| relative to μ = ${c.friction}`,
-          unit: "× μ",
-          kind: "sequential",
-          min: 0,
-          max: 1,
-          keys: [{ color: STATUS.critical, label: "slips (|κg| > μ κn)" }, {
-            color: "#898781",
-            label: "undefined (tie / bridge)",
-          }],
-        };
-      case "kn":
-        return {
-          title: "Normal curvature κn (convex > 0)",
-          unit: "1/m",
-          kind: "sequential",
-          min: 0,
-          max: 1 / rMin,
-        };
-      case "kg":
-        return {
-          title: "Geodesic curvature κg",
-          unit: "1/m",
-          kind: "diverging",
-          min: -0.5 / rMin,
-          max: 0.5 / rMin,
-        };
-      case "pressure":
-        return {
-          title: `Contact pressure p = T κn (T = ${c.tension} N)`,
-          unit: "N/m",
-          kind: "sequential",
-          min: 0,
-          max: c.tension / rMin,
         };
       case "flags":
         return {
@@ -409,6 +386,7 @@ export class YarnView {
   /** Changes the colour mode and recolours every ring. */
   setColorMode(mode) {
     this.colorMode = mode;
+    this.range = this.effectiveRange();
     this.recolorAll();
     this.legendVersion++;
   }

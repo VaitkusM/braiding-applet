@@ -72,8 +72,8 @@ const SCENARIOS = [
     view: "fell",
     later: { yarnColor: "alpha" },
   },
-  // Braid-angle colour scale: data range (default), full range, custom min/mid/max.
-  { name: "alpha-scale", params: {}, display: { yarnColor: "alpha" }, check: checkAlphaScale },
+  // Colour scales of every scalar colouring (data / full / custom), mandrel K scale, flat colour.
+  { name: "colour-scales", params: {}, display: {}, check: checkColourScales, wait: 6 },
   // Switching the yarn drawing to flat tapes (rebuilds the yarn view mid-run).
   {
     name: "tape-style",
@@ -96,58 +96,160 @@ const SCENARIOS = [
 ];
 
 /**
- * In-page check of the braid-angle colour scale (runs in the browser; returns a list of problems).
- * Colour-bar ticks must show the data range of the run, then 0/45/90, then the custom bounds.
+ * In-page check of all colour scales (runs in the browser; returns a list of problems). Expected
+ * ranges are computed here from the simulation data and the surface — independently of
+ * src/view/scales.js — and compared with the colour-bar ticks.
  */
-function checkAlphaScale() {
-  const app = globalThis.__braid.app, problems = [];
+function checkColourScales() {
+  const app = globalThis.__braid.app, sim = app.sim, problems = [];
   app.playing = false;
-  const ticks = () =>
-    [...document.querySelectorAll("#colorbar .cb-ticks")][0]
-      ?.innerText.split(/\s+/).map(Number) ?? [];
-  const set = (d) => {
+  const ticksOf = (n) =>
+    [...(document.querySelectorAll("#colorbar .cb-ticks")[n]?.children ?? [])]
+      .map((e) => Number(e.textContent));
+  const setDisplay = (d) => {
     Object.assign(app.display, d);
     for (const k of Object.keys(d)) app.applyDisplay(k);
     app.syncViews();
   };
-  // Data range of the deposited bias yarns (tie samples excluded).
-  let lo = Infinity, hi = -Infinity;
-  for (const y of app.sim.yarns) {
-    for (let i = 0; i < y.count; i++) {
-      if (y.flags[i] & 1) continue;
-      const a = Math.abs(y.alpha[i]) * 180 / Math.PI;
-      lo = Math.min(lo, a);
-      hi = Math.max(hi, a);
+  const scaleEvent = (target, what, value) => {
+    app.controls.scaleUI[target][what] = value;
+    app.onScale(target, what);
+    app.syncViews();
+  };
+  const visible = (re) =>
+    [...document.querySelectorAll(".lil-controller")].filter((c) =>
+      re.test(c.textContent) && c.style.display !== "none"
+    ).length;
+  const near = (a, b, tol) => Math.abs(a - b) <= tol;
+
+  // Independent references: principal curvatures sampled with SurfaceOfRevolution.principal.
+  let knMin = Infinity, knMax = -Infinity, kAbs = 0, kMaxAbs = 0;
+  for (let i = 0; i <= 2000; i++) {
+    const p = sim.surface.principal((i / 2000) * sim.profile.length);
+    knMin = Math.min(knMin, p.k_m, p.k_p);
+    knMax = Math.max(knMax, p.k_m, p.k_p);
+    kAbs = Math.max(kAbs, Math.abs(p.k_m), Math.abs(p.k_p));
+    kMaxAbs = Math.max(kMaxAbs, Math.abs(p.K));
+  }
+  const mu = sim.config.friction, T = sim.config.tension;
+  const values = {
+    alpha: (y, i) => Math.abs(y.alpha[i]) * 180 / Math.PI,
+    slip: (y, i) => Math.abs(y.slip[i]) / mu,
+    kn: (y, i) => y.kn[i],
+    kg: (y, i) => y.kg[i],
+    pressure: (y, i) => T * y.kn[i],
+  };
+  const signedMid = (lo, hi) => (lo < 0 && hi > 0 ? 0 : (lo + hi) / 2);
+  const full = {
+    alpha: [0, 45, 90],
+    slip: [0, 0.5, 1],
+    kn: [knMin, signedMid(knMin, knMax), knMax],
+    kg: [-kAbs, 0, kAbs],
+    pressure: [T * knMin, signedMid(T * knMin, T * knMax), T * knMax],
+  };
+
+  for (const mode of Object.keys(values)) {
+    setDisplay({ yarnColor: mode });
+    app.yarnView.lastRangeUpdate = -Infinity; // bypass the throttle
+    app.yarnView.followDataRange();
+    app.updateColorbar();
+    // Data range over the deposited bias yarns (tie samples excluded).
+    let lo = Infinity, hi = -Infinity;
+    for (const y of sim.yarns) {
+      for (let i = 0; i < y.count; i++) {
+        if (y.flags[i] & 1) continue;
+        const v = values[mode](y, i);
+        if (Number.isFinite(v)) [lo, hi] = [Math.min(lo, v), Math.max(hi, v)];
+      }
+    }
+    if (mode === "slip") [hi, lo] = [Math.min(hi, 1), Math.min(lo, Math.min(hi, 1))];
+    const span = hi - lo, fullSpan = full[mode][2] - full[mode][0];
+    const tol = 0.03 * Math.max(span, 0.02 * fullSpan) +
+      0.06 * Math.max(Math.abs(lo), Math.abs(hi));
+    let t = ticksOf(0);
+    if (span >= 0.02 * fullSpan) {
+      const mid = mode === "alpha" || mode === "slip" ? (lo + hi) / 2 : signedMid(lo, hi);
+      if (!(near(t[0], lo, tol) && near(t[1], mid, tol) && near(t[2], hi, tol))) {
+        problems.push(
+          `${mode} data: ticks ${t} vs ${lo.toPrecision(3)} / ${mid.toPrecision(3)} / ${
+            hi.toPrecision(3)
+          }`,
+        );
+      }
+    }
+    if (visible(/yarn colour scale/) !== 1) problems.push(`${mode}: scale selector not shown`);
+    // Full range.
+    scaleEvent("yarn", "mode", "full");
+    t = ticksOf(0);
+    const f = full[mode],
+      ftol = 0.02 * (f[2] - f[0]) + 0.06 * Math.max(Math.abs(f[0]), Math.abs(f[2]));
+    if (!(near(t[0], f[0], ftol) && near(t[1], f[1], ftol) && near(t[2], f[2], ftol))) {
+      problems.push(`${mode} full: ticks ${t} vs ${f.map((x) => x.toPrecision(3))}`);
+    }
+    // Custom: starts from the range shown, three sliders, bounds kept ordered.
+    scaleEvent("yarn", "mode", "custom");
+    if (visible(/↳ (min|mid|max)/) !== 3) problems.push(`${mode} custom: sliders not shown`);
+    const sp = app.display.yarnScales[mode];
+    if (!(sp.min < sp.mid && sp.mid < sp.max)) {
+      problems.push(`${mode} custom seed ${JSON.stringify(sp)}`);
+    }
+    if (!(near(sp.min, f[0], ftol) && near(sp.max, f[2], ftol))) {
+      problems.push(`${mode} custom did not start from the range shown: ${JSON.stringify(sp)}`);
+    }
+    scaleEvent("yarn", "min", sp.max + 1e6); // absurd value: must be clamped and reordered
+    const s2 = app.display.yarnScales[mode];
+    if (!(s2.min < s2.mid && s2.mid < s2.max)) {
+      problems.push(`${mode} ordering ${JSON.stringify(s2)}`);
+    }
+    t = ticksOf(0);
+    if (!(near(t[0], s2.min, ftol) && near(t[2], s2.max, ftol))) {
+      problems.push(`${mode} custom ticks ${t}`);
     }
   }
-  app.syncViews();
-  app.yarnView.lastRangeUpdate = -Infinity; // bypass the throttle for this check
-  app.yarnView.followDataRange();
-  app.syncViews();
-  let t = ticks();
-  if (!(Math.abs(t[0] - lo) < 1 && Math.abs(t[2] - hi) < 1)) {
-    problems.push(`data range ticks ${t} vs yarn |α| range ${lo.toFixed(1)}…${hi.toFixed(1)}`);
+  // Each colouring keeps its own scale.
+  setDisplay({ yarnColor: "alpha" });
+  if (
+    app.display.yarnScales.alpha.mode !== "custom" || app.yarnView.scales.alpha.mode !== "custom"
+  ) {
+    problems.push("alpha lost its custom scale after switching colourings");
   }
-  if (!(hi - lo < 60)) problems.push(`data range suspiciously wide: ${lo}…${hi}`);
-  set({ alphaScale: "full" });
-  t = ticks();
-  if (t.join() !== "0,45,90") problems.push(`full range ticks ${t}`);
-  set({ alphaScale: "custom" });
-  const sliders = [...document.querySelectorAll(".lil-controller")]
-    .filter((c) => /α (min|mid|max)/.test(c.textContent) && c.style.display !== "none").length;
-  if (sliders !== 3) problems.push(`custom range: ${sliders} visible sliders (expected 3)`);
-  set({ alphaMin: 30, alphaMid: 40, alphaMax: 60 });
-  t = ticks();
-  if (t.join() !== "30,40,60") problems.push(`custom ticks ${t}`);
-  set({ alphaMin: 70 }); // must push mid and max up
-  const d = app.display;
-  if (!(d.alphaMin === 70 && d.alphaMid > 70 && d.alphaMax > d.alphaMid)) {
-    problems.push(`ordering not kept: ${d.alphaMin}/${d.alphaMid}/${d.alphaMax}`);
+  setDisplay({ yarnColor: "family" });
+  if (visible(/yarn colour scale/) !== 0) {
+    problems.push("yarn scale selector shown for family colours");
   }
-  set({ yarnColor: "family" });
-  const modeShown = [...document.querySelectorAll(".lil-controller")]
-    .some((c) => /α colour scale/.test(c.textContent) && c.style.display !== "none");
-  if (modeShown) problems.push("α scale selector visible outside braid-angle colouring");
+
+  // Mandrel: K auto range = ±max |K|, custom mid at the neutral colour.
+  setDisplay({ mandrelColor: "K" });
+  let t = ticksOf(0);
+  if (
+    !(near(t[0], -kMaxAbs, 0.03 * kMaxAbs) && t[1] === 0 && near(t[2], kMaxAbs, 0.03 * kMaxAbs))
+  ) {
+    problems.push(`mandrel K auto: ticks ${t} vs ±${kMaxAbs.toPrecision(3)}`);
+  }
+  scaleEvent("mandrel", "mode", "custom");
+  if (visible(/↳ (min|mid|max)/) !== 3) problems.push("mandrel custom: sliders not shown");
+  const midK = 0.25 * kMaxAbs;
+  scaleEvent("mandrel", "mid", midK);
+  t = ticksOf(0);
+  const mk = app.display.mandrelScales.K;
+  if (!(near(t[1], mk.mid, 0.05 * kMaxAbs) && near(mk.mid, midK, 0.05 * kMaxAbs))) {
+    problems.push(`mandrel custom mid: ticks ${t}, spec ${JSON.stringify(mk)}`);
+  }
+  // Flat colour: matte material with the chosen colour, picker shown, no legend.
+  setDisplay({ mandrelColor: "flat", mandrelFlatColor: "#335577" });
+  const mv = app.mandrelView;
+  if (mv.mesh.material !== mv.flat || mv.flat.metalness !== 0) {
+    problems.push("flat material not used");
+  }
+  if (mv.flat.color.getHexString() !== "335577") {
+    problems.push(`flat colour ${mv.flat.color.getHexString()}`);
+  }
+  if (visible(/flat colour/) !== 1) problems.push("flat colour picker not shown");
+  if (mv.legend !== null) problems.push("flat mode must not show a mandrel legend");
+  setDisplay({ mandrelColor: "metal" });
+  if (visible(/flat colour|mandrel colour scale/) !== 0) {
+    problems.push("mandrel controls shown for metal");
+  }
   return problems;
 }
 

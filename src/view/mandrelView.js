@@ -1,17 +1,47 @@
 /**
- * @file mandrelView.js — the mandrel: a lathe mesh built in the MANDREL frame, optionally coloured
- * by Gaussian (K) or mean (H) curvature, plus end caps and a support shaft. Its parent group carries
- * the mandrel pose, so every child (yarns, overlays) moves with the mandrel.
+ * @file mandrelView.js — the mandrel: a lathe mesh built in the MANDREL frame, plus end caps and a
+ * support shaft. Its parent group carries the mandrel pose, so every child (yarns, overlays) moves
+ * with the mandrel.
+ *
+ * Colour modes: "metal" (reflective), "flat" (matte, one user-chosen colour: no metallic highlights,
+ * so coloured yarns read evenly against it), "K" / "H" (Gaussian / mean curvature on the diverging
+ * blue–gray–red scale; range "auto" = ±max |value| on this mandrel, or custom min / mid / max with
+ * mid at the neutral colour — see scales.js).
  */
 
 import * as THREE from "three";
-import { diverging, hexToRgb, srgbToLinear } from "./colormaps.js";
+import { diverging, pivotScale, srgbToLinear } from "./colormaps.js";
+import { mandrelRange, sliderBounds } from "./scales.js";
+
+/** Mandrel colour modes. */
+export const MANDREL_COLOR_MODES = Object.freeze({
+  metal: "Metal",
+  flat: "Flat colour (matte)",
+  K: "Gaussian curvature K",
+  H: "Mean curvature H",
+});
+
+/**
+ * Default colour of the flat (matte) mandrel: a medium slate gray, chosen by measuring OKLab ΔE
+ * between the rendered matte mandrel and every yarn colour (ramp, families, axial ivory, status):
+ * ΔE ≥ 11 over 90 % of the surface for all of them, while the silhouette keeps ΔE ≈ 22 against the
+ * dark background. Lighter grays hide the ivory axial yarns; darker ones merge with the background.
+ */
+export const DEFAULT_FLAT_COLOR = "#686b6f";
+
+const CURVATURE = Object.freeze({
+  K: { label: "Gaussian curvature K", unit: "1/m²" },
+  H: { label: "Mean curvature H (convex > 0)", unit: "1/m" },
+});
 
 /** @typedef {import("../core/simulation.js").Simulation} Simulation */
 
 export class MandrelView {
-  /** @param {Simulation} sim */
-  constructor(sim) {
+  /**
+   * @param {Simulation} sim
+   * @param {{flatColor?:string, scales?:Record<string, import("./scales.js").ScaleSpec>}} [opts]
+   */
+  constructor(sim, opts = {}) {
     this.sim = sim;
     /** Group in the mandrel frame; its matrix is set from the pose every frame. */
     this.group = new THREE.Group();
@@ -64,8 +94,19 @@ export class MandrelView {
       metalness: 0.05,
       roughness: 0.6,
     });
+    this.flat = new THREE.MeshStandardMaterial({
+      color: opts.flatColor ?? DEFAULT_FLAT_COLOR,
+      metalness: 0,
+      roughness: 0.85,
+    });
     this.mesh = new THREE.Mesh(geo, this.metal);
     this.group.add(this.mesh);
+    /** Value ranges of K and H over the mandrel, and their scale specs. */
+    this.values = { K: minMax(this.K), H: minMax(this.H) };
+    this.scales = {
+      K: { mode: "auto", ...opts.scales?.K },
+      H: { mode: "auto", ...opts.scales?.H },
+    };
 
     // End caps (flat discs) and a support shaft continuing upstream from the trailing end.
     const capMat = new THREE.MeshStandardMaterial({
@@ -94,38 +135,63 @@ export class MandrelView {
   }
 
   /**
-   * Switches the colouring. K and H use a diverging scale centred at 0, symmetric in the
-   * largest magnitude on this mandrel.
-   * @param {"metal"|"K"|"H"} mode
+   * Switches the colouring. @param {"metal"|"flat"|"K"|"H"} mode
    */
   setColorMode(mode) {
     this.mode = mode;
-    if (mode === "metal") {
-      this.mesh.material = this.metal;
+    if (mode === "metal" || mode === "flat") {
+      this.mesh.material = mode === "metal" ? this.metal : this.flat;
       this.legend = null;
       return;
     }
-    const data = mode === "K" ? this.K : this.H;
-    let max = 0;
-    for (const x of data) max = Math.max(max, Math.abs(x));
-    const scale = max > 0 ? max : 1;
+    this.paint();
+  }
+
+  /** Colour of the flat (matte) mode ("#rrggbb", sRGB). */
+  setFlatColor(hex) {
+    this.flat.color.set(hex);
+  }
+
+  /** Sets the scale of colouring "K" or "H" (repaints if it is shown). */
+  setScale(key, spec) {
+    this.scales[key] = { ...this.scales[key], ...spec };
+    if (key === this.mode) this.paint();
+  }
+
+  /** Scale information for the controls (null for metal / flat). */
+  scaleInfo(key = this.mode) {
+    if (!CURVATURE[key]) return null;
+    const auto = mandrelRange({ mode: "auto" }, this.values[key]);
+    const range = mandrelRange(this.scales[key], this.values[key]);
+    return {
+      spec: this.scales[key],
+      range,
+      full: auto,
+      bounds: sliderBounds(auto, range),
+      unit: CURVATURE[key].unit,
+    };
+  }
+
+  /** Paints K or H with the diverging scale: t = pivot(v; min, mid, max), colour = div(2t − 1). */
+  paint() {
+    const key = this.mode, data = key === "K" ? this.K : this.H;
+    const R = mandrelRange(this.scales[key], this.values[key]);
     const col = this.geometry.getAttribute("color");
-    const zero = hexToRgb("#c9c8c2").map(srgbToLinear);
     for (let i = 0; i < data.length; i++) {
-      const c = max > 0 ? diverging(data[i] / scale).map(srgbToLinear) : zero;
+      const c = diverging(2 * pivotScale(data[i], R.min, R.mid, R.max) - 1).map(srgbToLinear);
       col.setXYZ(i, c[0], c[1], c[2]);
     }
     col.needsUpdate = true;
     this.mesh.material = this.painted;
-    this.legend = mode === "K"
-      ? { title: "Gaussian curvature K", unit: "1/m²", kind: "diverging", min: -scale, max: scale }
-      : {
-        title: "Mean curvature H (convex > 0)",
-        unit: "1/m",
-        kind: "diverging",
-        min: -scale,
-        max: scale,
-      };
+    const what = { auto: "range of this mandrel", custom: "custom range" }[this.scales[key].mode];
+    this.legend = {
+      title: `${CURVATURE[key].label} · ${what}`,
+      unit: CURVATURE[key].unit,
+      kind: "diverging",
+      min: R.min,
+      mid: R.mid,
+      max: R.max,
+    };
   }
 
   /** Places the mandrel at simulation time t (pose → group matrix). */
@@ -147,5 +213,16 @@ export class MandrelView {
     });
     this.metal.dispose();
     this.painted.dispose();
+    this.flat.dispose();
   }
+}
+
+/** Min and max of a typed array. */
+function minMax(a) {
+  let min = Infinity, max = -Infinity;
+  for (const x of a) {
+    if (x < min) min = x;
+    if (x > max) max = x;
+  }
+  return { min, max };
 }

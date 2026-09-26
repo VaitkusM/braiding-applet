@@ -33,7 +33,9 @@ the mandrel and the mechanics of the yarns.
 - **Analysis.**
   - Live plots of braid angle, convergence length, curvatures, slip ratio and cover factor.
   - A theory panel with formulas and live values.
-  - Colour modes, CSV/PNG export, and share links (all parameters are kept in the URL).
+  - Colour modes with automatic (range of the run), custom (min / mid / max) or full-range scales;
+    a metal, flat-coloured or curvature-coloured mandrel.
+  - CSV/PNG export, and share links (all parameters are kept in the URL).
 
 | Fell zone (triaxial braid on a bulge)   | Interlacing (diamond 1/1, flat-tape drawing) |
 | --------------------------------------- | -------------------------------------------- |

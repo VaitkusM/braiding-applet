@@ -5,12 +5,19 @@
  *  - `params`  (simulation parameters, src/params.js): any change triggers `onParams()`, and the app
  *              restarts the run (debounced);
  *  - `display` (view-only settings): changes call `onDisplay(key)` and never restart the run.
+ * Colour-scale controls edit small proxy objects (`scaleUI.yarn`, `scaleUI.mandrel`); the app owns
+ * the per-colouring scale specs and pushes the current state back with `syncScales()`.
  */
 
 import GUI from "lil-gui";
 import { allowedCarrierCounts, PATTERNS } from "../core/machine.js";
 import { MANDREL_LABELS, patternM, SHAPE_RANGES } from "../params.js";
-import { ALPHA_SCALES, YARN_COLOR_MODES, YARN_STYLES } from "../view/yarnView.js";
+import { YARN_COLOR_MODES, YARN_STYLES } from "../view/yarnView.js";
+import { MANDREL_COLOR_MODES } from "../view/mandrelView.js";
+import { MANDREL_SCALE_MODES, YARN_SCALE_MODES } from "../view/scales.js";
+
+/** Inverts a {key: label} map into the {label: key} form lil-gui dropdowns expect. */
+const options = (m) => Object.fromEntries(Object.entries(m).map(([k, v]) => [v, k]));
 
 const SHAPE_LABELS = {
   length: "length [mm]",
@@ -99,29 +106,27 @@ export class Controls {
     fv.add(d, "yarnColor", yarnModes).name("yarn colour").onChange(() =>
       this.cb.onDisplay("yarnColor")
     );
-    fv.add(d, "mandrelColor", {
-      "Metal": "metal",
-      "Gaussian curvature K": "K",
-      "Mean curvature H": "H",
-    })
-      .name("mandrel colour").onChange(() => this.cb.onDisplay("mandrelColor"));
-    // Braid-angle colour scale (shown only while yarns are coloured by braid angle).
-    const scales = Object.fromEntries(Object.entries(ALPHA_SCALES).map(([k, v]) => [v, k]));
-    this.alphaCtrls = {
-      mode: fv.add(d, "alphaScale", scales).name("α colour scale").onChange(() =>
-        this.cb.onDisplay("alphaScale")
-      ),
-      min: fv.add(d, "alphaMin", 0, 90, 0.5).name("α min [°]").onChange(() =>
-        this.cb.onDisplay("alphaMin")
-      ),
-      mid: fv.add(d, "alphaMid", 0, 90, 0.5).name("α mid [°]").onChange(() =>
-        this.cb.onDisplay("alphaMid")
-      ),
-      max: fv.add(d, "alphaMax", 0, 90, 0.5).name("α max [°]").onChange(() =>
-        this.cb.onDisplay("alphaMax")
-      ),
+    // Scale of the yarn colouring (shown for braid angle, slip, κn, κg, pressure).
+    this.scaleUI = {
+      yarn: { mode: "data", min: 0, mid: 0.5, max: 1 },
+      mandrel: { mode: "auto", min: 0, mid: 0.5, max: 1 },
     };
-    this.updateAlphaScaleControls();
+    this.scaleCtrls = {
+      yarn: this.addScaleControls(fv, "yarn", "yarn colour scale", YARN_SCALE_MODES),
+    };
+    fv.add(d, "mandrelColor", options(MANDREL_COLOR_MODES)).name("mandrel colour").onChange(() =>
+      this.cb.onDisplay("mandrelColor")
+    );
+    this.flatColorCtrl = fv.addColor(d, "mandrelFlatColor").name("flat colour").onChange(() =>
+      this.cb.onDisplay("mandrelFlatColor")
+    );
+    this.scaleCtrls.mandrel = this.addScaleControls(
+      fv,
+      "mandrel",
+      "mandrel colour scale",
+      MANDREL_SCALE_MODES,
+    );
+    this.syncScales(null, null); // hidden until the app reports the current colourings
     fv.add(d, "thicknessScale", 1, 8, 0.5).name("thickness exaggeration").onFinishChange(() =>
       this.cb.onDisplay("thicknessScale")
     );
@@ -147,12 +152,41 @@ export class Controls {
   }
 
   /** Shows the α scale selector in braid-angle colouring, and the sliders for a custom range. */
-  updateAlphaScaleControls() {
-    const d = this.display, a = this.alphaCtrls;
-    if (!a) return;
-    const alpha = d.yarnColor === "alpha", custom = alpha && d.alphaScale === "custom";
-    a.mode.show(alpha);
-    for (const k of ["min", "mid", "max"]) a[k].show(custom);
+  /**
+   * Adds a scale selector and min / mid / max sliders for `target` ("yarn" | "mandrel").
+   * Slider limits, steps and unit labels are set later by `syncScales()`.
+   */
+  addScaleControls(folder, target, label, modes) {
+    const ui = this.scaleUI[target], ev = (what) => () => this.cb.onScale(target, what);
+    const c = { mode: folder.add(ui, "mode", options(modes)).name(label).onChange(ev("mode")) };
+    for (const k of ["min", "mid", "max"]) {
+      c[k] = folder.add(ui, k, 0, 1, 0.01).name(`↳ ${k}`).onChange(ev(k));
+    }
+    return c;
+  }
+
+  /**
+   * Shows the scale controls of the current colourings and loads their state.
+   * @param {object|null} yarn   scale info of the yarn colouring (YarnView.scaleInfo) or null
+   * @param {object|null} mandrel scale info of the mandrel colouring or null
+   */
+  syncScales(yarn, mandrel) {
+    for (const [target, info] of [["yarn", yarn], ["mandrel", mandrel]]) {
+      const c = this.scaleCtrls[target], ui = this.scaleUI[target];
+      c.mode.show(!!info);
+      const custom = !!info && info.spec.mode === "custom";
+      if (info) {
+        ui.mode = info.spec.mode;
+        const b = info.bounds;
+        for (const k of ["min", "mid", "max"]) {
+          ui[k] = Math.min(b.hi, Math.max(b.lo, info.range[k]));
+          c[k].min(b.lo).max(b.hi).step(b.step).name(`↳ ${k} [${info.unit}]`);
+        }
+      }
+      for (const k of ["mode", "min", "mid", "max"]) c[k].updateDisplay();
+      for (const k of ["min", "mid", "max"]) c[k].show(custom);
+    }
+    this.flatColorCtrl.show(this.display.mandrelColor === "flat");
   }
 
   /** Carrier-count dropdown restricted to counts compatible with the pattern (2m | N). */

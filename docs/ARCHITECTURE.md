@@ -70,11 +70,12 @@ are exact rotated copies, written into `yarns` as they are deposited. Views don'
 | Module           | Responsibility                                                                                                                                                                                                                                       |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `scene.js`       | Renderer (ACES tone mapping, RoomEnvironment), camera, OrbitControls, camera presets, projection helper                                                                                                                                              |
-| `mandrelView.js` | Lathe mesh with optional K/H colouring, end caps, shaft; owns the mandrel group (pose matrix)                                                                                                                                                        |
+| `mandrelView.js` | Lathe mesh; colour modes metal / flat (matte, user colour) / K / H (diverging, auto or custom range); end caps, shaft; owns the mandrel group (pose matrix)                                                                                          |
 | `machineView.js` | Track plate, instanced horn gears and carriers, figure-eight paths, guide ring, free yarns (`LineSegments2`)                                                                                                                                         |
 | `yarnView.js`    | Deposited yarns: one controller (ring commits, crossing-based undulation, incremental updates, LOD, colour modes, picking) with two drawables, fat lines like the free yarns (`LineDrawable`, default) or surface-framed flat tapes (`TapeDrawable`) |
 | `overlayView.js` | Fell line, Darboux frame and principal-direction arrows, geodesic from the selected fell point, HTML vector labels                                                                                                                                   |
 | `colormaps.js`   | Validated palette: categorical slots, sequential indigo→magenta ramp (chosen by measured contrast against the rendered mandrel), blue–gray–red diverging (OKLab), status colours                                                                     |
+| `scales.js`      | Pure colour-scale logic: per-colouring value, unit and full range; data / custom / full ranges (signed quantities pivot at 0); slider bounds and ordering of custom bounds; data-range tracker                                                       |
 
 ## UI modules (`src/ui/`)
 
@@ -96,8 +97,10 @@ are exact rotated copies, written into `yarns` as they are deposited. Views don'
   2. Add default shape parameters in `defaultShapes()` and ranges in `SHAPE_RANGES` (`params.js`).
   3. Add a label in `MANDREL_LABELS`.
   4. Add the preset to the tests in `tests/geometry.test.js`.
-- **New yarn colour mode:** add it to `YARN_COLOR_MODES`, `colorOf()` and `legend()` in
-  `yarnView.js`.
+- **New yarn colour mode:** add it to `YARN_COLOR_MODES` (`yarnView.js`). A continuous quantity
+  also gets an entry in `YARN_SCALES` (`scales.js`: value, unit, sign, full range); it then gets
+  the data / custom / full scale and the controls automatically. Categorical or status colourings
+  go into `colorOf()` and `legend()`.
 - **Non-axisymmetric mandrels:** implement the `SurfaceOfRevolution` interface for the new surface
   (`frame`, `normalCurvature`, `tangentToParam`, `paramToVector`, `darboux`, `braidAngle`,
   `clearance`, `projectRadially`, `principal`). `FellPointSolver` only uses that interface. Then
