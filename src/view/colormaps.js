@@ -4,8 +4,13 @@
  * Every colour does one job (see the data-viz method used for this project):
  *  - identity (categorical): the two yarn families and the reference curves, in a fixed slot order
  *    validated for the dark surface (#1a1a19): blue, orange, aqua, yellow;
- *  - magnitude (sequential): ONE hue (blue), dark → light (on a dark background, small values
- *    recede towards the background);
+ *  - magnitude (sequential): indigo → violet → magenta, dark → light, at maximum chroma. Yarns
+ *    are drawn over a neutral silver mandrel whose rendered lightness spans almost the whole range
+ *    (OKLab L ≈ 0.32–0.98), so only chroma can separate them from it. The ramp was chosen by
+ *    measuring OKLab ΔE between tone-mapped ramp colours and rendered mandrel pixels: at every
+ *    point of the ramp, 90 % of the mandrel area differs by ΔE ≥ 24 (the previous light-blue ramp
+ *    fell to ΔE 4). The analogous hue shift (a permitted multi-hue sequential exception) avoids the
+ *    orange / aqua / yellow / red that already mean "+" family, "−" family, geodesic and status;
  *  - polarity (diverging): blue ↔ red around a neutral gray midpoint, interpolated in OKLab so
  *    that lightness changes monotonically along each arm;
  *  - state (status): fixed good / warning / serious / critical colours, always shown with a label.
@@ -41,20 +46,11 @@ export const STATUS = Object.freeze({
   critical: "#d03b3b",
 });
 
-/** Sequential blue ramp, steps 600 → 100 (dark → light). */
-const SEQ_BLUE = [
-  "#184f95",
-  "#1c5cab",
-  "#256abf",
-  "#2a78d6",
-  "#3987e5",
-  "#5598e7",
-  "#6da7ec",
-  "#86b6ef",
-  "#9ec5f4",
-  "#b7d3f6",
-  "#cde2fb",
-];
+/**
+ * Sequential ramp, dark → light: OKLCH L 0.38 → 0.70, hue 270° → 335°, chroma at 95 % of the sRGB
+ * gamut limit (7 stops, interpolated in OKLab). See the header for how it was chosen.
+ */
+const SEQ = ["#2111bd", "#4815d1", "#6c18e1", "#911bec", "#b61eef", "#dc21ed", "#fb3edf"];
 
 /** Diverging poles and neutral midpoint. */
 const DIV_NEG = "#2a78d6", DIV_MID = "#c9c8c2", DIV_POS = "#e34948";
@@ -118,8 +114,8 @@ function sampleRamp(ramp, t) {
   return mixOklab(ramp[i], ramp[i + 1], x - i);
 }
 
-/** Sequential scale: t ∈ [0, 1] → sRGB (dark blue → light blue). */
-export const sequential = (t) => sampleRamp(SEQ_BLUE, t);
+/** Sequential scale: t ∈ [0, 1] → sRGB (dark indigo → light magenta). */
+export const sequential = (t) => sampleRamp(SEQ, t);
 
 /** Diverging scale: t ∈ [−1, 1] → sRGB (blue ← gray → red). */
 export function diverging(t) {

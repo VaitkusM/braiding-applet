@@ -74,7 +74,7 @@ are exact rotated copies, written into `yarns` as they are deposited. Views don'
 | `machineView.js` | Track plate, instanced horn gears and carriers, figure-eight paths, guide ring, free yarns (`LineSegments2`)                                                                                                                                         |
 | `yarnView.js`    | Deposited yarns: one controller (ring commits, crossing-based undulation, incremental updates, LOD, colour modes, picking) with two drawables, fat lines like the free yarns (`LineDrawable`, default) or surface-framed flat tapes (`TapeDrawable`) |
 | `overlayView.js` | Fell line, Darboux frame and principal-direction arrows, geodesic from the selected fell point, HTML vector labels                                                                                                                                   |
-| `colormaps.js`   | Validated palette: categorical slots, sequential blue ramp, blue–gray–red diverging (OKLab), status colours                                                                                                                                          |
+| `colormaps.js`   | Validated palette: categorical slots, sequential indigo→magenta ramp (chosen by measured contrast against the rendered mandrel), blue–gray–red diverging (OKLab), status colours                                                                     |
 
 ## UI modules (`src/ui/`)
 

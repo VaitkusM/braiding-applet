@@ -39,3 +39,13 @@ Deno.test("colormaps: OKLab round trip and hex helpers", () => {
   }
   assertClose(hexToRgb("#ff8000")[1], 128 / 255, 1e-12);
 });
+
+Deno.test("colormaps: every sequential colour is strongly chromatic (visible on the neutral mandrel)", () => {
+  // The mandrel renders as a neutral gray over almost the whole lightness range, so yarn colours
+  // must be separated from it by chroma (OKLab C), at every point of the ramp.
+  for (let i = 0; i <= 50; i++) {
+    const [, a, b] = rgbToOklab(sequential(i / 50));
+    const chroma = Math.hypot(a, b);
+    assert(chroma > 0.15, `chroma ${chroma.toFixed(3)} at t = ${i / 50}`);
+  }
+});
