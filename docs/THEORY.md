@@ -1,8 +1,8 @@
 # Theory: circular braiding onto a mandrel
 
-This document explains the model behind the applet and derives everything it computes. It assumes the
-classical differential geometry of surfaces (first and second fundamental forms, normal and geodesic
-curvature, the Darboux frame). The emphasis is on the braiding process and on the modelling steps
+This document explains the model behind the applet and derives everything it computes. It assumes
+the classical differential geometry of surfaces (first and second fundamental forms, normal and
+geodesic curvature, the Darboux frame). The emphasis is on the braiding process and on the modelling steps
 that turn the machine's motion into the geometry of the laid yarns.
 
 Code comments refer to the section numbers. All figures are computed with the applet's own core by
@@ -74,7 +74,8 @@ This block is repeated verbatim in `src/core/surface.js`.
   cylinder this is the usual angle to the axis. On sloped profiles the angle to the machine axis is
   different: $\cos\alpha_{3D}=\cos\alpha/\sqrt{1+r'^2}$.
 - **Darboux frame** of a curve on the surface: $(t,n,b)$ with $b=n\times t$, geodesic curvature
-  $\kappa_g=t'\cdot b$, and $t'=\kappa_g\,b-\kappa_n\,n$ (with $\kappa_n$ convex-positive).
+  $\kappa_g=t'\cdot b$, and $t'=\kappa_g\thinspace b-\kappa_n\thinspace n$ (with $\kappa_n$
+  convex-positive).
 - The code writes `g_zz, g_tt, ii_zz, ii_tt` instead of $E,F,G,L,M,N$. Those letters would clash with
   the guide point $G$, the free length $L$ and the carrier count $N$.
 
@@ -96,9 +97,10 @@ Between the ring and the mandrel the yarns are **free**. They meet the mandrel a
 line**, where the braid forms. The axial distance from the ring plane to the fell line is the
 **convergence length** $h$; the region in between is the **convergence zone**.
 
-The braid angle comes from the ratio of rotation to take-up. While the mandrel advances by $v\,dt$,
-each carrier turns by $\omega\,dt$, an arc $\omega r\,dt$ at the mandrel radius. Faster rotation
-raises the braid angle towards hoop winding; faster take-up lowers it towards the axis (Section 4).
+The braid angle comes from the ratio of rotation to take-up. While the mandrel advances by
+$v\thinspace dt$, each carrier turns by $\omega\thinspace dt$, an arc $\omega r\thinspace dt$ at
+the mandrel radius. Faster rotation raises the braid angle towards hoop winding; faster take-up
+lowers it towards the axis (Section 4).
 
 ### 2.2 Carrier kinematics
 
@@ -114,12 +116,12 @@ each passing into a crossing with a definite over/under.
 ### 2.3 Mandrel pose and relative motion
 
 The model works in the mandrel frame, in which the laid yarn is at rest. The pose is
-$$x_{\rm machine}=R\,x_M+c(t),\qquad R=R_x(\tau),\qquad a=R\hat z_M,\qquad c(t)=e-(d_0+vt)\,a,$$
+$$x_{\rm machine}=R\thinspace x_M+c(t),\qquad R=R_x(\tau),\qquad a=R\hat z_M,\qquad c(t)=e-(d_0+vt)\thinspace a,$$
 
 where $\tau$ is the tilt about the machine $x$ axis and $e=(e_x,e_y,0)$ the offset. The mandrel moves
 along its own axis. Hence the axis pierces the ring plane always at $e$, at the mandrel coordinate
 $z_M=d_0+vt$. A machine point with velocity $u$ moves relative to the mandrel with
-$$\dot x_M=R^{\mathsf T}u+v\,\hat z_M.$$
+$$\dot x_M=R^{\mathsf T}u+v\thinspace \hat z_M.$$
 
 For a guide point, $u$ is the carrier's circular velocity, so $\dot G$ below always means this
 relative velocity: rotation about the machine axis plus the take-up. Only points fixed in the
@@ -177,17 +179,17 @@ $$\cos\beta=\frac{r}{R_g},\qquad \lvert G-F\rvert_{\text{projected}}=\sqrt{R_g^2
 
 independently of $h$ and of the braid angle. In the reference case $\beta=74.5°$.
 
-### 3.4 Winding kinematics: differentiating $G=F+L\,t$
+### 3.4 Winding kinematics: differentiating $G=F+L\thinspace t$
 
 ![Darboux frame of the laid yarn at the fell point](figures/darboux-frame.svg)
 
 **Figure 4.** The Darboux frame $(t,n,b)$ of the laid yarn at the fell point of the reference
 cylinder. The free yarn leaves $F$ along $t$, the tangent of the laid yarn.
 
-While the yarn is wrapping, $F$ moves along the free-yarn direction, $\dot F=\lambda\,t$ with
-$\lambda\ge0$. So $t$ is also the unit tangent of the laid yarn and $\lambda=ds/dt$ is the rate at
-which yarn is laid (arc length per unit time). The configuration satisfies the identity
-$$G=F+L\,t.$$
+While the yarn is wrapping, $F$ moves along the free-yarn direction, $\dot F=\lambda\thinspace t$
+with $\lambda\ge0$. So $t$ is also the unit tangent of the laid yarn and $\lambda=ds/dt$ is the rate
+at which yarn is laid (arc length per unit time). The configuration satisfies the identity
+$$G=F+L\thinspace t.$$
 
 In the mandrel frame the free yarn is therefore the tangent line of the laid curve at its end point,
 and the guide point always lies on the tangent developable of the laid yarn. If no yarn were paid out
@@ -195,13 +197,14 @@ from the bobbin (free plus laid length constant, $\dot L=-\lambda$) this would b
 construction, with the string winding onto the curve instead of off it. The bobbins do pay out
 yarn, so in general $\dot G\cdot t\ne0$ (see below).
 
-Differentiate the identity in time, using $\dot t=\lambda\,t'=\lambda(\kappa_g b-\kappa_n n)$:
-$$\dot G=(\lambda+\dot L)\,t+\lambda L\,\kappa_g\,b-\lambda L\,\kappa_n\,n.$$
+Differentiate the identity in time, using
+$\dot t=\lambda\thinspace t'=\lambda(\kappa_g b-\kappa_n n)$:
+$$\dot G=(\lambda+\dot L)\thinspace t+\lambda L\thinspace \kappa_g\thinspace b-\lambda L\thinspace \kappa_n\thinspace n.$$
 
 The three components of the guide point's relative velocity, in the Darboux frame at $F$, give
 everything:
 
-$$\lambda=-\frac{\dot G\cdot n}{L\,\kappa_n},\qquad \kappa_g=\frac{\dot G\cdot b}{\lambda L},\qquad \kappa_n=-\frac{\dot G\cdot n}{\lambda L},\qquad \dot L=\dot G\cdot t-\lambda,\qquad \boxed{\ \frac{\kappa_g}{\kappa_n}=-\frac{\dot G\cdot b}{\dot G\cdot n}\ }.$$
+$$\lambda=-\frac{\dot G\cdot n}{L\thinspace \kappa_n},\qquad \kappa_g=\frac{\dot G\cdot b}{\lambda L},\qquad \kappa_n=-\frac{\dot G\cdot n}{\lambda L},\qquad \dot L=\dot G\cdot t-\lambda,\qquad \boxed{\ \frac{\kappa_g}{\kappa_n}=-\frac{\dot G\cdot b}{\dot G\cdot n}\ }.$$
 
 - **Normal component.** $\dot G\cdot n=-\lambda L\kappa_n$ is the time derivative of the tangency
   condition $g=0$. The yarn is laid ($\lambda>0$) when the guide point dives below the tangent plane
@@ -268,7 +271,7 @@ $\psi=\varphi_G-\theta_F$ be the lag angle. The tangency condition reads $R_g\co
 fell point moves along $G-F$. Projected onto $S_z$ and $S_\theta$, and using the tangency condition,
 this gives the chart direction $(\dot z,\dot\theta)\parallel\bigl(d,\ R_g\sin\psi/r\bigr)$.
 Differentiating the tangency condition in time then yields the scalar ODE
-$$\dot z_F=\frac{A\left(\omega+\dfrac{r'v}{R_g\sin\psi}\right)}{1-\dfrac{r\,r''d^2}{R_g^2\sin^2\psi}},\qquad A=\frac{r\,d}{R_g\sin\psi},\qquad \theta_F=\varphi_G-\psi.$$
+$$\dot z_F=\frac{A\left(\omega+\dfrac{r'v}{R_g\sin\psi}\right)}{1-\dfrac{r\thinspace r''d^2}{R_g^2\sin^2\psi}},\qquad A=\frac{r\thinspace d}{R_g\sin\psi},\qquad \theta_F=\varphi_G-\psi.$$
 
 The denominator is proportional to $\kappa_n$. `tests/fixtures/generate_fixtures.py` integrates this
 ODE with SciPy (DOP853, rtol $10^{-12}$) for a curved taper mandrel. The general 3D solver agrees
@@ -312,9 +315,9 @@ downstream of the ring. Two phases follow.
 - **Wrapping.** At $\omega t=\beta=\arccos(r/R_g)$ the free yarn becomes tangent (1.30 s in the
   reference case). From then on $\beta$ stays constant, so the fell point rotates with the carriers:
   parallel speed $\omega r$ over the mandrel. Along the yarn direction this means an axial speed
-  $\omega r\cot\alpha=\omega r\,h/\sqrt{R_g^2-r^2}$ over the mandrel. Hence
+  $\omega r\cot\alpha=\omega r\thinspace h/\sqrt{R_g^2-r^2}$ over the mandrel. Hence
 
-$$\dot h=v-\frac{\omega r\,h}{\sqrt{R_g^2-r^2}}\quad\Rightarrow\quad h(t)=h_\infty+(h_0-h_\infty)\,e^{-t/\tau},\qquad \tau=\frac{\sqrt{R_g^2-r^2}}{\omega r},$$
+$$\dot h=v-\frac{\omega r\thinspace h}{\sqrt{R_g^2-r^2}}\quad\Rightarrow\quad h(t)=h_\infty+(h_0-h_\infty)\thinspace e^{-t/\tau},\qquad \tau=\frac{\sqrt{R_g^2-r^2}}{\omega r},$$
 
 with $t$ and $h_0$ now counted from the onset of wrapping. This is the transient of Du & Popper
 (1994). The applet plots this reference together with the simulated $h(t)$.
@@ -385,7 +388,7 @@ A tensioned yarn on a _frictionless_ mandrel would follow a geodesic. In the cha
 with arc length $s$:
 $$z''+\Gamma^z_{zz}z'^2+\Gamma^z_{\theta\theta}\theta'^2=0,\qquad \theta''+2\Gamma^\theta_{z\theta}z'\theta'=0,$$
 
-$$\Gamma^z_{zz}=\frac{r'r''}{1+r'^2},\qquad \Gamma^z_{\theta\theta}=-\frac{r\,r'}{1+r'^2},\qquad \Gamma^\theta_{z\theta}=\frac{r'}{r}.$$
+$$\Gamma^z_{zz}=\frac{r'r''}{1+r'^2},\qquad \Gamma^z_{\theta\theta}=-\frac{r\thinspace r'}{1+r'^2},\qquad \Gamma^\theta_{z\theta}=\frac{r'}{r}.$$
 
 Clairaut's relation $r^2\theta'=r\sin\alpha=c$ is a first integral. Along a geodesic
 $\alpha_{geo}(z)=\arcsin(c/r(z))$, until the turning point $r=c$. `src/core/geodesic.js` integrates
@@ -411,20 +414,21 @@ steady helix on the reference cylinder (on the axis of the cone), and two points
 taper, one inside and one outside the cone.
 
 A flexible yarn with tension $T(s)$ is loaded by the surface with a force per unit length
-$f=f_n n+f_b b+f_t t$. Equilibrium $\frac{d}{ds}(T\,t)+f=0$ with $t'=\kappa_gb-\kappa_nn$ gives
+$f=f_n n+f_b b+f_t t$. Equilibrium $\frac{d}{ds}(T\thinspace t)+f=0$ with
+$t'=\kappa_gb-\kappa_nn$ gives
 $$f_n=T\kappa_n,\qquad f_b=-T\kappa_g,\qquad f_t=-T'.$$
 
 - **Pressure.** The normal line load is $p=T\kappa_n$. It must be positive (compression), which
   again requires $\kappa_n>0$.
 - **Slip.** With Coulomb friction and constant tension the yarn does not slip sideways iff
-  $$|\kappa_g|\le\mu\,\kappa_n$$
+  $$|\kappa_g|\le\mu\thinspace \kappa_n$$
   (Akkerman & Villa Rodríguez 2007). In filament winding the ratio $\kappa_g/\kappa_n$ is called
   the slippage coefficient (Wang et al. 2011).
 
 **Geometric reading.** The reaction $f=T(\kappa_n n-\kappa_g b)$ lies in the normal plane of the
 yarn. No slip means that it lies inside the Coulomb cone of half-angle $\arctan\mu$ about $n$. By
 Section 3.4,
-$$\kappa_n\,n-\kappa_g\,b=-\frac{1}{\lambda L}\,\dot G_\perp,\qquad \dot G_\perp=(\dot G\cdot n)\,n+(\dot G\cdot b)\,b.$$
+$$\kappa_n\thinspace n-\kappa_g\thinspace b=-\frac{1}{\lambda L}\thinspace \dot G_\perp,\qquad \dot G_\perp=(\dot G\cdot n)\thinspace n+(\dot G\cdot b)\thinspace b.$$
 
 So the reaction is parallel to $-\dot G_\perp$. The yarn holds exactly when the guide point's
 relative velocity, projected onto the normal plane of the yarn, points into the mandrel steeply
@@ -493,7 +497,7 @@ recent passing:
   rule "gear side at the crossing azimuth". The tests check this for all three patterns.
 
 **Height.** Each yarn stores its crossing events $(s_k,\sigma_k)$. The rendered centre line lies at
-height $t_y(c+a\,\tilde\sigma(s))$ above the surface, where:
+height $t_y(c+a\thinspace \tilde\sigma(s))$ above the surface, where:
 
 - $\tilde\sigma=\sigma_k$ exactly at crossings, so the two yarns there always get opposite heights;
 - between crossings of different sign, $\tilde\sigma$ follows a half-cosine blend;
