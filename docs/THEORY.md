@@ -171,7 +171,7 @@ mandrel circle, so the fell point lags behind its guide point by $\beta$.
 
 On a cylinder the tangent plane at $F$ contains the axis direction. Projected along the axis it
 becomes the tangent line of the circle, so the projected free yarn is tangent to the circle of
-radius $r$. The right triangle centre–$F$–$G$ then gives
+radius $r$. The right triangle formed by the centre, $F$ and $G$ then gives
 
 $$\cos\beta=\frac{r}{R_g},\qquad \lvert G-F\rvert_{\text{projected}}=\sqrt{R_g^2-r^2},$$
 
@@ -344,7 +344,7 @@ appears as a start-up transient. A geodesic leaving the same point turns the oth
 
 **Figure 8.** Euler's formula at three points of the default mandrels: the taper's cylindrical part
 ($K=0$), the bulge crest ($K>0$) and the waist centre ($K<0$). On the waist a yarn laid at less than
-$\alpha^*$ would have $\kappa_n<0$ and bridges.
+$\alpha^\ast$ would have $\kappa_n<0$ and bridges.
 
 The principal directions of a surface of revolution are the meridian ($k_m$) and the parallel
 ($k_p$). A yarn at braid angle $\alpha$ therefore feels the normal curvature
@@ -357,9 +357,9 @@ The sign of $K$ decides what can happen:
 - **Elliptic points** ($K>0$: bulge crest). Since $k_p>0$ on a surface of revolution, both principal
   curvatures are positive and every direction is convex.
 - **Hyperbolic points** ($K<0$: waist). $k_m<0<k_p$, and $\kappa_n<0$ for
-  $$\tan^2\alpha<-\frac{k_m}{k_p},\qquad\text{i.e.}\qquad \alpha<\alpha^*=\arctan\sqrt{-k_m/k_p}.$$
+  $$\tan^2\alpha<-\frac{k_m}{k_p},\qquad\text{i.e.}\qquad \alpha<\alpha^\ast=\arctan\sqrt{-k_m/k_p}.$$
   Low-angle yarns cannot lie on a waist: they bridge (Section 3.5). On the default hourglass
-  $\alpha^*=20.5°$.
+  $\alpha^\ast=20.5°$.
 
 The pressure of a yarn on the mandrel is proportional to $\kappa_n$ (Section 7), so the same plot
 also shows how hard the yarn presses.
@@ -474,7 +474,8 @@ On a centred mandrel the crossing of $(+j,-i)$ lies at the azimuth
 $\theta_c=(i+j)\Delta/2+\Delta/4+\pi p$, a passing azimuth: by mirror symmetry both families
 reach each axial position at the same time with opposite lags, and the lags cancel. Consecutive
 crossings along a yarn are $2\pi/N$ apart, so $m$ consecutive crossings fall into one gear and share
-its side. This gives the $m$-over-$m$-under blocks of the diamond, regular and Hercules braids.
+its side. This gives the blocks of $m$ overs and $m$ unders of the diamond, regular and Hercules
+braids.
 
 ### 8.3 Crossing detection, over/under and undulation
 
