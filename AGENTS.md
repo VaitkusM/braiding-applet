@@ -44,6 +44,10 @@ There is no build step and no Node. Browser dependencies come from the import ma
      order and figure numbers. Regenerate the figures (`deno task figures`) and check them visually.
   2. Keep or extend the validation tests: analytic cylinder solution, Du–Popper transient, SciPy
      fixture, closed forms vs finite differences.
+- **Math in Markdown must render on GitHub.** GitHub's Markdown runs before MathJax: no
+  `\operatorname`; write `\thinspace`, not `\,` (backslash-punctuation escapes lose their
+  backslash); write `^\ast`, not `^*` (asterisks pair up as emphasis); keep `$…$` away from
+  adjacent dashes or letters.
 - **No unverified claims in user-facing text** (About tab, README, Theory). Check a new claim
   numerically with the core before writing it, and verify new references (e.g. via Crossref).
 
