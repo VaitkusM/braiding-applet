@@ -114,6 +114,22 @@ function sampleRamp(ramp, t) {
   return mixOklab(ramp[i], ramp[i + 1], x - i);
 }
 
+/**
+ * Maps a value to the position t ∈ [0, 1] on a colour ramp with an adjustable midpoint:
+ * [min, mid] → [0, ½] and [mid, max] → [½, 1] (piecewise linear), clamped at both ends.
+ * With mid = (min + max)/2 this is the ordinary linear mapping. NaN in → NaN out.
+ * @param {number} v @param {number} min @param {number} mid @param {number} max
+ */
+export function pivotScale(v, min, mid, max) {
+  if (!Number.isFinite(v)) return NaN;
+  if (!(max > min)) return 0.5;
+  const m = Math.min(max, Math.max(min, mid));
+  let t;
+  if (v <= m) t = m > min ? (0.5 * (v - min)) / (m - min) : 0;
+  else t = max > m ? 0.5 + (0.5 * (v - m)) / (max - m) : 1;
+  return Math.min(1, Math.max(0, t));
+}
+
 /** Sequential scale: t ∈ [0, 1] → sRGB (dark indigo → light magenta). */
 export const sequential = (t) => sampleRamp(SEQ, t);
 

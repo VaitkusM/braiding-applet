@@ -72,6 +72,8 @@ const SCENARIOS = [
     view: "fell",
     later: { yarnColor: "alpha" },
   },
+  // Braid-angle colour scale: data range (default), full range, custom min/mid/max.
+  { name: "alpha-scale", params: {}, display: { yarnColor: "alpha" }, check: checkAlphaScale },
   // Switching the yarn drawing to flat tapes (rebuilds the yarn view mid-run).
   {
     name: "tape-style",
@@ -92,6 +94,62 @@ const SCENARIOS = [
     wait: 8,
   },
 ];
+
+/**
+ * In-page check of the braid-angle colour scale (runs in the browser; returns a list of problems).
+ * Colour-bar ticks must show the data range of the run, then 0/45/90, then the custom bounds.
+ */
+function checkAlphaScale() {
+  const app = globalThis.__braid.app, problems = [];
+  app.playing = false;
+  const ticks = () =>
+    [...document.querySelectorAll("#colorbar .cb-ticks")][0]
+      ?.innerText.split(/\s+/).map(Number) ?? [];
+  const set = (d) => {
+    Object.assign(app.display, d);
+    for (const k of Object.keys(d)) app.applyDisplay(k);
+    app.syncViews();
+  };
+  // Data range of the deposited bias yarns (tie samples excluded).
+  let lo = Infinity, hi = -Infinity;
+  for (const y of app.sim.yarns) {
+    for (let i = 0; i < y.count; i++) {
+      if (y.flags[i] & 1) continue;
+      const a = Math.abs(y.alpha[i]) * 180 / Math.PI;
+      lo = Math.min(lo, a);
+      hi = Math.max(hi, a);
+    }
+  }
+  app.syncViews();
+  app.yarnView.lastRangeUpdate = -Infinity; // bypass the throttle for this check
+  app.yarnView.followDataRange();
+  app.syncViews();
+  let t = ticks();
+  if (!(Math.abs(t[0] - lo) < 1 && Math.abs(t[2] - hi) < 1)) {
+    problems.push(`data range ticks ${t} vs yarn |α| range ${lo.toFixed(1)}…${hi.toFixed(1)}`);
+  }
+  if (!(hi - lo < 60)) problems.push(`data range suspiciously wide: ${lo}…${hi}`);
+  set({ alphaScale: "full" });
+  t = ticks();
+  if (t.join() !== "0,45,90") problems.push(`full range ticks ${t}`);
+  set({ alphaScale: "custom" });
+  const sliders = [...document.querySelectorAll(".lil-controller")]
+    .filter((c) => /α (min|mid|max)/.test(c.textContent) && c.style.display !== "none").length;
+  if (sliders !== 3) problems.push(`custom range: ${sliders} visible sliders (expected 3)`);
+  set({ alphaMin: 30, alphaMid: 40, alphaMax: 60 });
+  t = ticks();
+  if (t.join() !== "30,40,60") problems.push(`custom ticks ${t}`);
+  set({ alphaMin: 70 }); // must push mid and max up
+  const d = app.display;
+  if (!(d.alphaMin === 70 && d.alphaMid > 70 && d.alphaMax > d.alphaMid)) {
+    problems.push(`ordering not kept: ${d.alphaMin}/${d.alphaMid}/${d.alphaMax}`);
+  }
+  set({ yarnColor: "family" });
+  const modeShown = [...document.querySelectorAll(".lil-controller")]
+    .some((c) => /α colour scale/.test(c.textContent) && c.style.display !== "none");
+  if (modeShown) problems.push("α scale selector visible outside braid-angle colouring");
+  return problems;
+}
 
 const only = args.only ? new Set(args.only.split(",")) : null;
 await Deno.mkdir(args.out, { recursive: true });
@@ -202,6 +260,9 @@ for (const sc of SCENARIOS) {
       if (after > 0.02 * before) {
         problems.push(`recolouring incomplete: ${after} orange pixels remain`);
       }
+    }
+    if (sc.check) {
+      for (const pr of await page.evaluate(sc.check)) problems.push(pr);
     }
     const state = await page.evaluate(() => ({
       time: globalThis.__braid.time,

@@ -296,12 +296,25 @@ select:focus-visible {
   background: rgba(26, 26, 25, 0.85);
 }
 
-.colorbar {
+#hud-bottom {
   position: absolute;
   left: 12px;
+  right: 12px;
   bottom: 12px;
-  z-index: 3;
-  width: min(300px, calc(100% - 24px));
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none;
+}
+
+#hud-bottom > * {
+  pointer-events: auto;
+}
+
+.colorbar {
+  width: min(300px, 100%);
   padding: 8px 10px;
   border-radius: var(--radius);
   background: rgba(26, 26, 25, 0.88);
@@ -348,12 +361,7 @@ select:focus-visible {
 }
 
 .message {
-  position: absolute;
-  left: 50%;
-  bottom: 14px;
-  transform: translateX(-50%);
-  z-index: 4;
-  max-width: min(560px, calc(100% - 24px));
+  max-width: min(560px, 100%);
   padding: 8px 14px;
   border-radius: var(--radius);
   background: rgba(26, 26, 25, 0.92);
@@ -713,7 +721,7 @@ table.data th {
   }
 
   .colorbar {
-    width: min(240px, calc(100% - 24px));
+    width: min(240px, 100%);
     font-size: 11px;
     padding: 6px 8px;
   }

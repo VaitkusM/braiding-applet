@@ -3,6 +3,7 @@ import {
   diverging,
   hexToRgb,
   mixOklab,
+  pivotScale,
   rgbToHex,
   rgbToOklab,
   sequential,
@@ -48,4 +49,17 @@ Deno.test("colormaps: every sequential colour is strongly chromatic (visible on 
     const chroma = Math.hypot(a, b);
     assert(chroma > 0.15, `chroma ${chroma.toFixed(3)} at t = ${i / 50}`);
   }
+});
+
+Deno.test("colormaps: pivot scale maps min/mid/max to 0/½/1, piecewise linear, clamped", () => {
+  assertClose(pivotScale(30, 30, 40, 60), 0, 0);
+  assertClose(pivotScale(40, 30, 40, 60), 0.5, 0);
+  assertClose(pivotScale(60, 30, 40, 60), 1, 0);
+  assertClose(pivotScale(35, 30, 40, 60), 0.25, 1e-15);
+  assertClose(pivotScale(50, 30, 40, 60), 0.75, 1e-15);
+  assertClose(pivotScale(10, 30, 40, 60), 0, 0); // clamped below
+  assertClose(pivotScale(80, 30, 40, 60), 1, 0); // clamped above
+  assertClose(pivotScale(45, 0, 45, 90), 0.5, 0); // symmetric mid = linear
+  assertClose(pivotScale(5, 7, 7, 7), 0.5, 0); // degenerate range
+  assert(Number.isNaN(pivotScale(NaN, 0, 1, 2)), "NaN passes through");
 });

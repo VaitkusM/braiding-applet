@@ -43,6 +43,10 @@ export class App {
     validateParams(this.params);
     this.display = {
       yarnColor: "family",
+      alphaScale: "data", // braid-angle colour scale: "data" | "custom" | "full"
+      alphaMin: 30, // custom range [°]
+      alphaMid: 45,
+      alphaMax: 60,
       mandrelColor: "metal",
       yarnStyle: "line", // "line" (like the free yarns) | "tape"
       thicknessScale: 1.5,
@@ -129,6 +133,7 @@ export class App {
       thicknessScale: this.display.thicknessScale,
       colorMode: this.display.yarnColor,
       style: this.display.yarnStyle,
+      alphaScale: this.alphaScaleSpec(),
     });
     this.overlayView = new OverlayView(sim, this.doc.getElementById("labels-host"));
     this.machineView = new MachineView(sim);
@@ -185,6 +190,24 @@ export class App {
     switch (key) {
       case "yarnColor":
         this.yarnView.setColorMode(d.yarnColor);
+        this.controls.updateAlphaScaleControls();
+        break;
+      case "alphaScale":
+        if (d.alphaScale === "custom" && !silent) {
+          // Start the custom sliders from the range currently shown.
+          const R = this.yarnView.alphaRange, r = (x) => Math.round(((x * 180) / Math.PI) * 2) / 2;
+          Object.assign(d, { alphaMin: r(R.min), alphaMid: r(R.mid), alphaMax: r(R.max) });
+        }
+        this.yarnView.setAlphaScale(this.alphaScaleSpec());
+        this.controls.updateAlphaScaleControls();
+        this.controls.refresh();
+        break;
+      case "alphaMin":
+      case "alphaMid":
+      case "alphaMax":
+        this.orderAlphaBounds(key);
+        this.yarnView.setAlphaScale(this.alphaScaleSpec());
+        this.controls.refresh();
         break;
       case "mandrelColor":
         this.mandrelView.setColorMode(d.mandrelColor);
@@ -221,6 +244,7 @@ export class App {
       thicknessScale: this.display.thicknessScale,
       colorMode: this.display.yarnColor,
       style: this.display.yarnStyle,
+      alphaScale: this.alphaScaleSpec(),
     });
     this.yarnView.setSelected(this.display.selectedYarn);
     this.yarnView.setResolution(this.view.size.w, this.view.size.h);
@@ -237,7 +261,31 @@ export class App {
     }
   }
 
+  /** Braid-angle scale settings for the yarn view (bounds in degrees). */
+  alphaScaleSpec() {
+    const d = this.display;
+    return { mode: d.alphaScale, min: d.alphaMin, mid: d.alphaMid, max: d.alphaMax };
+  }
+
+  /** Keeps min < mid < max (0.5° apart) after one custom bound was moved. */
+  orderAlphaBounds(moved) {
+    const d = this.display, g = 0.5;
+    d.alphaMin = Math.min(Math.max(d.alphaMin, 0), 90 - 2 * g);
+    d.alphaMax = Math.max(Math.min(d.alphaMax, 90), 2 * g);
+    d.alphaMid = Math.min(Math.max(d.alphaMid, 0), 90);
+    if (moved === "alphaMin") {
+      d.alphaMid = Math.max(d.alphaMid, d.alphaMin + g);
+      d.alphaMax = Math.max(d.alphaMax, d.alphaMid + g);
+    } else if (moved === "alphaMax") {
+      d.alphaMid = Math.min(d.alphaMid, d.alphaMax - g);
+      d.alphaMin = Math.min(d.alphaMin, d.alphaMid - g);
+    } else {
+      d.alphaMid = Math.min(Math.max(d.alphaMid, d.alphaMin + g), d.alphaMax - g);
+    }
+  }
+
   updateColorbar() {
+    this.legendVersionShown = this.yarnView?.legendVersion;
     this.colorbar.render([this.yarnView?.legend(), this.mandrelView?.legend]);
   }
 
@@ -434,6 +482,7 @@ export class App {
     this.machineView.update();
     this.yarnView.update();
     this.overlayView.update(this.view, this.yarnView.thickness * 3.5);
+    if (this.yarnView.legendVersion !== this.legendVersionShown) this.updateColorbar(); // data range moved
     this.status.update(sim);
     if (now - this.lastPanelUpdate > 250) {
       this.lastPanelUpdate = now;

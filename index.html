@@ -85,14 +85,17 @@
           <div id="canvas-host"></div>
           <div id="gui-host"></div>
           <div id="labels-host" aria-hidden="true"></div>
-          <div id="colorbar" class="colorbar" hidden></div>
+          <!-- Bottom-left column: status message above the colour legend (never overlapping). -->
+          <div id="hud-bottom">
+            <div id="message" class="message" hidden></div>
+            <div id="colorbar" class="colorbar" hidden></div>
+          </div>
           <div class="view-buttons" role="group" aria-label="Camera views">
             <button class="btn small" type="button" data-view="overview">Overview</button>
             <button class="btn small" type="button" data-view="fell">Fell zone</button>
             <button class="btn small" type="button" data-view="side">Side</button>
             <button class="btn small" type="button" data-view="front">Front</button>
           </div>
-          <div id="message" class="message" hidden></div>
         </section>
 
         <aside id="sidepanel">

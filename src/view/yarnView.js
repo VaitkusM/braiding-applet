@@ -29,6 +29,7 @@ import {
   AXIAL_COLOR,
   diverging,
   hexToRgb,
+  pivotScale,
   sequential,
   SERIES,
   srgbToLinear,
@@ -47,6 +48,13 @@ export const YARN_LINE_WIDTH = 1.4;
 export const YARN_STYLES = Object.freeze({
   line: "Lines (like the free yarns)",
   tape: "Flat tapes",
+});
+const DEG = Math.PI / 180;
+/** Braid-angle colour scales (see YarnView.setAlphaScale). */
+export const ALPHA_SCALES = Object.freeze({
+  data: "Range of this run (auto)",
+  custom: "Custom range (min / mid / max)",
+  full: "Full range 0–90°",
 });
 const lin = (rgb) => rgb.map(srgbToLinear);
 const hexLin = (hex) => lin(hexToRgb(hex));
@@ -123,6 +131,14 @@ export class YarnView {
     this.a = this.triaxial ? 1.0 : 0.5;
 
     this.colorMode = opts.colorMode;
+    // Braid-angle colour scale: mode + custom bounds [°]; the effective range is in radians.
+    this.alphaScale = { mode: "data", min: 0, mid: 45, max: 90, ...opts.alphaScale };
+    this.dataMin = Infinity; // |α| range of the deposited bias yarns (rings written so far)
+    this.dataMax = -Infinity;
+    this.alphaRange = this.effectiveAlphaRange();
+    this.lastRangeUpdate = -Infinity;
+    /** Incremented whenever the legend (colour-bar ticks) changes. */
+    this.legendVersion = 0;
     this.selected = 0;
     this.entries = [];
     sim.yarns.forEach((y, k) => this.entries.push(this.makeEntry(y, sim.crossings.events[k], k)));
@@ -165,6 +181,49 @@ export class YarnView {
   /** Brings every yarn mesh up to date with the simulation. */
   update() {
     for (const e of this.entries) this.sync(e);
+    if (this.alphaScale.mode === "data") this.followDataRange();
+  }
+
+  /**
+   * Effective braid-angle range {min, mid, max} [rad] for the current scale mode. The data range
+   * falls back to the full range until yarn has been deposited; a span below 1° is widened.
+   */
+  effectiveAlphaRange() {
+    const s = this.alphaScale;
+    if (s.mode === "custom") return { min: s.min * DEG, mid: s.mid * DEG, max: s.max * DEG };
+    if (s.mode === "data" && this.dataMax >= this.dataMin) {
+      const lo = this.dataMin, hi = Math.max(this.dataMax, lo + DEG);
+      return { min: lo, mid: 0.5 * (lo + hi), max: hi };
+    }
+    return { min: 0, mid: 45 * DEG, max: 90 * DEG };
+  }
+
+  /**
+   * Data-range mode: follows the growing |α| range of the run. Recolours only when a bound has moved
+   * by more than 2 % of the span (at least 0.25°), and at most every 300 ms.
+   */
+  followDataRange() {
+    const next = this.effectiveAlphaRange(), cur = this.alphaRange;
+    const tol = Math.max(0.02 * (next.max - next.min), 0.25 * DEG);
+    if (Math.abs(next.min - cur.min) < tol && Math.abs(next.max - cur.max) < tol) return;
+    const now = performance.now();
+    if (now - this.lastRangeUpdate < 300) return;
+    this.lastRangeUpdate = now;
+    this.alphaRange = next;
+    if (this.colorMode === "alpha") this.recolorAll();
+    this.legendVersion++;
+  }
+
+  /**
+   * Sets the braid-angle colour scale.
+   * @param {{mode:"data"|"custom"|"full", min?:number, mid?:number, max?:number}} s bounds in degrees
+   */
+  setAlphaScale(s) {
+    this.alphaScale = { ...this.alphaScale, ...s };
+    this.alphaRange = this.effectiveAlphaRange();
+    this.lastRangeUpdate = performance.now();
+    if (this.colorMode === "alpha") this.recolorAll();
+    this.legendVersion++;
   }
 
   /** Incremental update of one yarn. */
@@ -225,6 +284,11 @@ export class YarnView {
     const C = [y.x[i] + h * n[0], y.y[i] + h * n[1], y.z[i] + h * n[2]];
     e.centers.set(C, 3 * r);
     const hw = (e.k < 0 ? this.axialWidth : this.width) / 2;
+    if (e.k >= 0 && !(y.flags[i] & FLAG.TIE)) {
+      const a = Math.abs(y.alpha[i]);
+      if (a < this.dataMin) this.dataMin = a;
+      if (a > this.dataMax) this.dataMax = a;
+    }
     e.draw.writeRing(r, C, n, b, this.colorOf(e, i), hw, T / 2);
   }
 
@@ -236,8 +300,10 @@ export class YarnView {
     switch (this.colorMode) {
       case "family":
         return hexLin(y.family === 1 ? SERIES.plus : SERIES.minus);
-      case "alpha":
-        return lin(sequential(Math.abs(y.alpha[i]) / (Math.PI / 2)));
+      case "alpha": {
+        const R = this.alphaRange;
+        return lin(sequential(pivotScale(Math.abs(y.alpha[i]), R.min, R.mid, R.max)));
+      }
       case "slip": {
         // Status first (also for μ = 0), then the ratio |κg/κn| / μ on the sequential scale.
         const r = Math.abs(y.slip[i]);
@@ -278,14 +344,18 @@ export class YarnView {
             ...(this.triaxial ? [{ color: AXIAL_COLOR, label: "axial yarns" }] : []),
           ],
         };
-      case "alpha":
+      case "alpha": {
+        const R = this.alphaRange;
+        const what = { data: "range of this run", custom: "custom range", full: "full range" };
         return {
-          title: "Braid angle |α| (from the meridian)",
+          title: `Braid angle |α| from the meridian · ${what[this.alphaScale.mode]}`,
           unit: "°",
           kind: "sequential",
-          min: 0,
-          max: 90,
+          min: R.min / DEG,
+          mid: R.mid / DEG,
+          max: R.max / DEG,
         };
+      }
       case "slip":
         return {
           title: `Slip ratio |κg/κn| relative to μ = ${c.friction}`,
@@ -339,6 +409,12 @@ export class YarnView {
   /** Changes the colour mode and recolours every ring. */
   setColorMode(mode) {
     this.colorMode = mode;
+    this.recolorAll();
+    this.legendVersion++;
+  }
+
+  /** Recomputes every ring colour (uploaded in full by the next sync). */
+  recolorAll() {
     for (const e of this.entries) {
       const total = e.rings.length + 1;
       for (let r = 0; r < total && e.path.count; r++) {

@@ -10,7 +10,7 @@
 import GUI from "lil-gui";
 import { allowedCarrierCounts, PATTERNS } from "../core/machine.js";
 import { MANDREL_LABELS, patternM, SHAPE_RANGES } from "../params.js";
-import { YARN_COLOR_MODES, YARN_STYLES } from "../view/yarnView.js";
+import { ALPHA_SCALES, YARN_COLOR_MODES, YARN_STYLES } from "../view/yarnView.js";
 
 const SHAPE_LABELS = {
   length: "length [mm]",
@@ -105,6 +105,23 @@ export class Controls {
       "Mean curvature H": "H",
     })
       .name("mandrel colour").onChange(() => this.cb.onDisplay("mandrelColor"));
+    // Braid-angle colour scale (shown only while yarns are coloured by braid angle).
+    const scales = Object.fromEntries(Object.entries(ALPHA_SCALES).map(([k, v]) => [v, k]));
+    this.alphaCtrls = {
+      mode: fv.add(d, "alphaScale", scales).name("α colour scale").onChange(() =>
+        this.cb.onDisplay("alphaScale")
+      ),
+      min: fv.add(d, "alphaMin", 0, 90, 0.5).name("α min [°]").onChange(() =>
+        this.cb.onDisplay("alphaMin")
+      ),
+      mid: fv.add(d, "alphaMid", 0, 90, 0.5).name("α mid [°]").onChange(() =>
+        this.cb.onDisplay("alphaMid")
+      ),
+      max: fv.add(d, "alphaMax", 0, 90, 0.5).name("α max [°]").onChange(() =>
+        this.cb.onDisplay("alphaMax")
+      ),
+    };
+    this.updateAlphaScaleControls();
     fv.add(d, "thicknessScale", 1, 8, 0.5).name("thickness exaggeration").onFinishChange(() =>
       this.cb.onDisplay("thicknessScale")
     );
@@ -127,6 +144,15 @@ export class Controls {
     fn.add(p, "dsMaxMm", 0.1, 3, 0.05).name("max step Δs [mm]").onFinishChange(change);
     fn.add(p, "dphiMaxDeg", 0.1, 3, 0.05).name("max rotation Δφ [°]").onFinishChange(change);
     fn.add(p, "turnMaxDeg", 0.2, 5, 0.1).name("max turn per step [°]").onFinishChange(change);
+  }
+
+  /** Shows the α scale selector in braid-angle colouring, and the sliders for a custom range. */
+  updateAlphaScaleControls() {
+    const d = this.display, a = this.alphaCtrls;
+    if (!a) return;
+    const alpha = d.yarnColor === "alpha", custom = alpha && d.alphaScale === "custom";
+    a.mode.show(alpha);
+    for (const k of ["min", "mid", "max"]) a[k].show(custom);
   }
 
   /** Carrier-count dropdown restricted to counts compatible with the pattern (2m | N). */

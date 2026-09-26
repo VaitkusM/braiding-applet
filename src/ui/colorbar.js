@@ -40,7 +40,7 @@ export class ColorBar {
         ramp.style.background = rampCss(lg.kind);
         const ticks = document.createElement("div");
         ticks.className = "cb-ticks";
-        const mid = (lg.min + lg.max) / 2;
+        const mid = lg.mid ?? (lg.min + lg.max) / 2; // ramp centre (pivot) value
         for (const v of [lg.min, mid, lg.max]) {
           const s = document.createElement("span");
           s.textContent = fmt(v);
