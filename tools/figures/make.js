@@ -3,9 +3,10 @@
  * in-app Theory tab) as SVG files in docs/figures/ (dev tool, not deployed as code).
  *
  * The figures are COMPUTED with the app's own core (src/core): simulation runs, principal
- * curvatures, the geodesic integrator, the machine's track and over/under rules. Two figures are
- * schematic and say so in their descriptions: the overview diagram and the bridging sections (whose
- * chords are nevertheless computed, as the upper convex hull of the drawn section).
+ * curvatures, the geodesic integrator, the machine's track and over/under rules. Three figures are
+ * schematic and say so in their descriptions: the overview diagram, the bridging sections (whose
+ * chords are nevertheless computed, as the upper convex hull of the drawn section) and the planar
+ * foliations illustrating curl and divergence.
  *
  *   deno task figures          # regenerate docs/figures/*.svg
  *
@@ -1260,6 +1261,355 @@ function figCover() {
   return s.toString();
 }
 
+// ── Figure 15: curl and divergence of a unit vector field (planar foliations) ──────────────────
+
+function figCurlDiv() {
+  const W = 760, H = 330;
+  const s = new Svg(W, H, {
+    title: "Curl and divergence of the unit field of a foliation",
+    desc: "Schematic, three planar foliations drawn exactly: parallel lines (curl and divergence " +
+      "zero), a pencil of lines (geodesic leaves whose spacing grows, divergence 1/ℓ) and concentric " +
+      "circles (equally spaced leaves that bend, curl 1/ℓ); ℓ is the distance from the centre.",
+  });
+  const pw = 220, ph = 200, oy = 44;
+  const panel = (i, title, lines, draw) => {
+    const ox = 20 + i * 250;
+    const clip = `clip-fol-${i}`;
+    s.raw(
+      `<clipPath id="${clip}"><rect x="${ox}" y="${oy}" width="${pw}" height="${ph}"/></clipPath>`,
+    );
+    s.rect(ox, oy, pw, ph, { fill: "#f6f8fa" });
+    s.raw(`<g clip-path="url(#${clip})">`);
+    const marks = draw(ox);
+    s.raw(`</g>`);
+    s.rect(ox, oy, pw, ph, { stroke: C.faint, width: 1 });
+    marks();
+    s.text(ox + pw / 2, 30, title, { anchor: "middle", weight: 600 });
+    lines.forEach((l, k) =>
+      s.text(ox + pw / 2, oy + ph + 22 + 17 * k, l, {
+        anchor: "middle",
+        size: 12,
+        math: true,
+        color: k === 0 ? C.ink : C.muted,
+      })
+    );
+  };
+  const leaf = { stroke: C.plus, width: 2 };
+  const unitArrow = (x, y, ux, uy) =>
+    s.arrow(x - 11 * ux, y - 11 * uy, x + 11 * ux, y + 11 * uy, { head: 7, width: 1.4 });
+  const gap = (x1, y1, x2, y2, label) =>
+    s.dimension(x1, y1, x2, y2, label, { dx: 10, dy: 2, text: { size: 12 } });
+  // (a) parallel lines at 35° (screen), spacing 28 px.
+  panel(0, "parallel lines", ["curl X = 0,  div X = 0", "only where K = 0"], (ox) => {
+    const a = -35 * DEG, u = [Math.cos(a), Math.sin(a)], nv = [-u[1], u[0]], sp = 28;
+    const cx = ox + pw / 2, cy = oy + ph / 2;
+    for (let j = -8; j <= 8; j++) {
+      const p = [cx + j * sp * nv[0], cy + j * sp * nv[1]];
+      s.line(p[0] - 300 * u[0], p[1] - 300 * u[1], p[0] + 300 * u[0], p[1] + 300 * u[1], leaf);
+    }
+    return () => {
+      for (const [j, t] of [[-2, -40], [0, 30], [2, -10]]) {
+        unitArrow(cx + j * sp * nv[0] + t * u[0], cy + j * sp * nv[1] + t * u[1], u[0], u[1]);
+      }
+      const p1 = [cx + sp * nv[0] + 60 * u[0], cy + sp * nv[1] + 60 * u[1]];
+      gap(p1[0], p1[1], p1[0] + sp * nv[0], p1[1] + sp * nv[1], "ρ");
+    };
+  });
+  // Pencil and circles share a centre below-left of the panel; ℓ = distance from it.
+  const centre = (ox) => [ox - 30, oy + ph + 30];
+  panel(1, "pencil of lines", ["curl X = 0,  div X = 1/ℓ", "geodesic leaves spread"], (ox) => {
+    const [cx, cy] = centre(ox);
+    for (let a = 6; a <= 84; a += 6) {
+      const u = [Math.cos(a * DEG), -Math.sin(a * DEG)];
+      s.line(cx + 20 * u[0], cy + 20 * u[1], cx + 420 * u[0], cy + 420 * u[1], leaf);
+    }
+    return () => {
+      for (const [a, d] of [[30, 150], [54, 230], [66, 110]]) {
+        const u = [Math.cos(a * DEG), -Math.sin(a * DEG)];
+        unitArrow(cx + d * u[0], cy + d * u[1], u[0], u[1]);
+      }
+      for (const d of [110, 250]) {
+        const a1 = 42 * DEG, a2 = 48 * DEG;
+        gap(
+          cx + d * Math.cos(a1),
+          cy - d * Math.sin(a1),
+          cx + d * Math.cos(a2),
+          cy - d * Math.sin(a2),
+          "ρ",
+        );
+      }
+    };
+  });
+  panel(2, "concentric circles", ["|curl X| = 1/ℓ,  div X = 0", "equally spaced leaves bend"], (
+    ox,
+  ) => {
+    const [cx, cy] = centre(ox);
+    for (let d = 64; d <= 420; d += 28) s.arc(cx, cy, d, 0, Math.PI / 2, leaf);
+    return () => {
+      for (const [a, d] of [[30, 148], [60, 204], [20, 260]]) {
+        const u = [-Math.sin(a * DEG), -Math.cos(a * DEG)]; // counter-clockwise tangent (screen)
+        unitArrow(cx + d * Math.cos(a * DEG), cy - d * Math.sin(a * DEG), u[0], u[1]);
+      }
+      const a = 45 * DEG;
+      gap(
+        cx + 176 * Math.cos(a),
+        cy - 176 * Math.sin(a),
+        cx + 204 * Math.cos(a),
+        cy - 204 * Math.sin(a),
+        "ρ",
+      );
+    };
+  });
+  s.text(
+    W - 16,
+    H - 10,
+    "arrows: unit field X · ρ: spacing of neighbouring leaves · ℓ: distance from the centre",
+    {
+      size: 11,
+      color: C.muted,
+      anchor: "end",
+      math: true,
+    },
+  );
+  return s.toString();
+}
+
+// ── Figure 16: Clairaut's relation with friction on the default taper ───────────────────────────
+
+/** Samples of the "+" yarn that lie on the surface and were laid continuously. */
+function laidSamples(y, zMin = 0) {
+  const ok = [];
+  for (let k = 1; k < y.count; k++) {
+    if (y.flags[k] & (FLAG.TIE | FLAG.BRIDGE | FLAG.CONTACT | FLAG.LIFTOFF)) continue;
+    if (y.zp[k] >= zMin) ok.push(k);
+  }
+  return ok;
+}
+
+function figClairautFriction() {
+  const { taper: sim } = runs();
+  const prof = sim.profile, c = sim.config, y = sim.yarns[0], mu = c.friction;
+  const W = 640, H = 470;
+  const s = new Svg(W, H, {
+    title: "Clairaut's relation with friction along the default taper",
+    desc:
+      "Computed for the '+' yarns of the default taper. Top: the Clairaut function r sin α of " +
+      "the braid, of the quasi-static braid and of the geodesic from z = 250 mm (constant). " +
+      "Bottom: the geodesic curvature from the closed form of Section 3.4 (line) and from the rate " +
+      "of change of r sin α (dots), with the friction band ±μκn; outside it the yarn slips.",
+  });
+  const Lmm = prof.length * MM;
+  const csin = (k) => prof.evaluate(y.zp[k]).r * Math.sin(Math.abs(y.alpha[k]));
+  const A1 = axes(s, {
+    x: 60,
+    y: 40,
+    w: 540,
+    h: 110,
+    xDomain: [0, Lmm],
+    yDomain: [0, 50],
+    xTicks: [],
+    yTicks: [0, 25, 50],
+    xLabel: "",
+    yLabel: "c = r sin α [mm]",
+  });
+  const trans = (A, y0, y1) =>
+    s.rect(A.X(250), y0, A.X(450) - A.X(250), y1 - y0, { fill: C.grid, fillOpacity: 0.6 });
+  trans(A1, 40, 150);
+  const k0 = findSample(y, (k) => y.zp[k] >= 0.25), cGeo = csin(k0);
+  const braid = laidSamples(y).filter((_, i) => i % 3 === 0).map((k) => [
+    A1.X(y.zp[k] * MM),
+    A1.Y(csin(k) * MM),
+  ]);
+  const qs = [];
+  for (let i = 0; i <= 200; i++) {
+    const z = (i / 200) * prof.length;
+    qs.push([
+      A1.X(z * MM),
+      A1.Y(prof.evaluate(z).r * Math.sin(quasiStaticAngle(prof, z, c.omega, c.takeUp)) * MM),
+    ]);
+  }
+  s.polyline(qs, { stroke: C.quasiStatic, width: 2 });
+  s.line(A1.X(250), A1.Y(cGeo * MM), A1.X(Lmm), A1.Y(cGeo * MM), {
+    stroke: C.geodesic,
+    width: 2.2,
+    dash: "6 4",
+  });
+  s.polyline(braid, { stroke: C.plus, width: 2.5 });
+  const legend = [
+    ["braid (+ family)", { stroke: C.plus, width: 2.5 }],
+    ["quasi-static braid", { stroke: C.quasiStatic, width: 2 }],
+    ["geodesic: c constant", { stroke: C.geodesic, width: 2.2, dash: "6 4" }],
+  ];
+  legend.forEach(([label, style], i) => {
+    const ly = A1.Y(46 - 6.5 * i);
+    s.line(A1.X(12), ly - 4, A1.X(12) + 22, ly - 4, style);
+    s.text(A1.X(12) + 28, ly, label, { size: 12, math: true });
+  });
+  s.text(A1.X(350), 36, "taper", { size: 11, anchor: "middle", color: C.muted });
+  // Bottom: κ_g two ways, friction band.
+  const A = axes(s, {
+    x: 60,
+    y: 200,
+    w: 540,
+    h: 210,
+    xDomain: [0, Lmm],
+    yDomain: [-5, 5],
+    xTicks: [0, 200, 400, 600, 800],
+    yTicks: [-4, -2, 0, 2, 4],
+    xLabel: "z [mm]",
+    yLabel: "κ_g [1/m]",
+  });
+  trans(A, 200, 410);
+  const ks = laidSamples(y, 0.05);
+  const up = [], dn = [];
+  for (let i = 0; i < ks.length; i += 4) {
+    const k = ks[i];
+    up.push([A.X(y.zp[k] * MM), A.Y(mu * y.kn[k])]);
+    dn.push([A.X(y.zp[k] * MM), A.Y(-mu * y.kn[k])]);
+  }
+  s.polygon([...up, ...dn.reverse()], { fill: C.good, fillOpacity: 0.13 });
+  s.line(A.X(0), A.Y(0), A.X(Lmm), A.Y(0), { stroke: C.faint, width: 1 });
+  // Slip: samples flagged SLIP, marked on the axis in the status colour.
+  let z0 = null;
+  const slipRuns = [];
+  for (const k of ks) {
+    const slip = (y.flags[k] & FLAG.SLIP) !== 0;
+    if (slip && z0 === null) z0 = y.zp[k];
+    if (!slip && z0 !== null) {
+      slipRuns.push([z0, y.zp[k]]);
+      z0 = null;
+    }
+  }
+  if (z0 !== null) slipRuns.push([z0, y.zp[ks.at(-1)]]);
+  for (const [a, b] of slipRuns) {
+    s.rect(A.X(a * MM), A.Y(-5) - 8, A.X(b * MM) - A.X(a * MM), 6, { fill: C.critical });
+    s.text((A.X(a * MM) + A.X(b * MM)) / 2, A.Y(-5) - 12, "slips", {
+      size: 11,
+      anchor: "middle",
+      color: C.critical,
+    });
+  }
+  s.polyline(ks.filter((_, i) => i % 2 === 0).map((k) => [A.X(y.zp[k] * MM), A.Y(y.kg[k])]), {
+    stroke: C.plus,
+    width: 2.4,
+  });
+  // Dots: κ_g = −(1/r) d(r sin α)/dσ by central differences over ±2 samples.
+  const sigma = (a, b) => {
+    const q = (z) => Math.sqrt(1 + prof.evaluate(z).dr ** 2), zm = 0.5 * (y.zp[a] + y.zp[b]);
+    return ((y.zp[b] - y.zp[a]) * (q(y.zp[a]) + 4 * q(zm) + q(y.zp[b]))) / 6;
+  };
+  const cs = (k) => prof.evaluate(y.zp[k]).r * Math.sin(y.alpha[k]);
+  for (let i = 2; i < ks.length - 2; i += 18) {
+    const k = ks[i];
+    if (ks[i + 2] !== k + 2 || ks[i - 2] !== k - 2) continue;
+    const kg = -(cs(k + 2) - cs(k - 2)) / sigma(k - 2, k + 2) / prof.evaluate(y.zp[k]).r;
+    s.circle(A.X(y.zp[k] * MM), A.Y(kg), 2.3, { fill: C.ink });
+  }
+  s.text(A.X(560), A.Y(3.3), "friction band ±μκ_n", { size: 12, math: true });
+  s.text(A.X(470), A.Y(-2.4), "κ_g, closed form (line)", { size: 12, math: true });
+  s.text(A.X(470), A.Y(-3.3), "−(1/r) d(r sin α)/dσ (dots)", { size: 12, math: true });
+  return s.toString();
+}
+
+// ── Figure 17: what a geodesic braid would cost ─────────────────────────────────────────────────
+
+function figGeodesicBraid() {
+  const { taper: sim } = runs();
+  const prof = sim.profile, c = sim.config, y = sim.yarns[0];
+  const N = c.carriers, w = c.yarnWidth;
+  const W = 640, H = 430;
+  const s = new Svg(W, H, {
+    title: "Machine braid versus a geodesic braid on the default taper",
+    desc: "Computed. Top: cover factor of the simulated braid and of the pair of mirror Clairaut " +
+      "foliations through the braid at z = 250 mm, whose leaf spacing is a Jacobi field. Bottom: " +
+      "the constant take-up speed of the run and the quasi-static take-up schedule that would lay " +
+      "the geodesic pair.",
+  });
+  const Lmm = prof.length * MM;
+  const k0 = findSample(y, (k) => y.zp[k] >= 0.25);
+  const cc = prof.evaluate(y.zp[k0]).r * Math.sin(Math.abs(y.alpha[k0]));
+  const cf = (rho) => 1 - (1 - Math.min(1, w / rho)) ** 2;
+  const A1 = axes(s, {
+    x: 60,
+    y: 40,
+    w: 540,
+    h: 150,
+    xDomain: [0, Lmm],
+    yDomain: [0, 1],
+    xTicks: [],
+    yTicks: [0, 0.25, 0.5, 0.75, 1],
+    xLabel: "",
+    yLabel: "cover factor CF",
+  });
+  const band = (A, y0, y1) =>
+    s.rect(A.X(250), y0, A.X(450) - A.X(250), y1 - y0, { fill: C.grid, fillOpacity: 0.6 });
+  band(A1, 40, 190);
+  const braid = laidSamples(y).filter((_, i) => i % 3 === 0).map((k) => {
+    const r = prof.evaluate(y.zp[k]).r;
+    return [A1.X(y.zp[k] * MM), A1.Y(cf((4 * Math.PI * r * Math.cos(y.alpha[k])) / N))];
+  });
+  const geo = [], vgeo = [];
+  for (let i = 0; i <= 240; i++) {
+    const z = (i / 240) * prof.length, e = prof.evaluate(z), q = Math.sqrt(1 + e.dr * e.dr);
+    const root = Math.sqrt(e.r * e.r - cc * cc);
+    geo.push([A1.X(z * MM), A1.Y(cf((4 * Math.PI * root) / N))]);
+    vgeo.push([z * MM, (c.omega * e.r * root) / (q * cc) * MM]);
+  }
+  s.polyline(geo, { stroke: C.geodesic, width: 2.4, dash: "7 4" });
+  s.polyline(braid, { stroke: C.plus, width: 2.5 });
+  const cfEnd = cf((4 * Math.PI * prof.evaluate(prof.length).r * Math.cos(y.alpha[y.last])) / N);
+  const cfGeoEnd = cf((4 * Math.PI * Math.sqrt(prof.evaluate(prof.length).r ** 2 - cc * cc)) / N);
+  s.text(A1.X(790), A1.Y(cfEnd) - 8, `machine braid: CF → ${cfEnd.toFixed(2)}`, {
+    size: 12,
+    anchor: "end",
+    weight: 600,
+  });
+  s.text(A1.X(790), A1.Y(cfGeoEnd) + 18, `geodesic braid: CF → ${cfGeoEnd.toFixed(2)}`, {
+    size: 12,
+    anchor: "end",
+  });
+  s.text(A1.X(350), 36, "taper", { size: 11, anchor: "middle", color: C.muted });
+  const A = axes(s, {
+    x: 60,
+    y: 240,
+    w: 540,
+    h: 130,
+    xDomain: [0, Lmm],
+    yDomain: [0, 100],
+    xTicks: [0, 200, 400, 600, 800],
+    yTicks: [0, 25, 50, 75, 100],
+    xLabel: "z [mm]",
+    yLabel: "take-up speed [mm/s]",
+  });
+  band(A, 240, 370);
+  s.polyline(vgeo.map(([z, v]) => [A.X(z), A.Y(v)]), {
+    stroke: C.geodesic,
+    width: 2.4,
+    dash: "7 4",
+  });
+  s.line(A.X(0), A.Y(c.takeUp * MM), A.X(Lmm), A.Y(c.takeUp * MM), {
+    stroke: C.plus,
+    width: 2.5,
+  });
+  s.text(A.X(790), A.Y(c.takeUp * MM) + 18, `run: constant ${(c.takeUp * MM).toFixed(0)} mm/s`, {
+    size: 12,
+    anchor: "end",
+    weight: 600,
+  });
+  s.text(A.X(15), A.Y(60), "geodesic braid, quasi-static schedule", { size: 12 });
+  s.text(
+    20,
+    H - 14,
+    `geodesic pair: r sin α = ±${(cc * MM).toFixed(1)} mm (the braid's value at z = 250 mm)`,
+    {
+      size: 12,
+      color: C.muted,
+      math: true,
+    },
+  );
+  return s.toString();
+}
+
 // ── Registry and CLI ────────────────────────────────────────────────────────────────────────────
 
 /** All figures: file name → builder. */
@@ -1279,6 +1629,9 @@ export const FIGURES = Object.freeze({
   "horn-gear-track.svg": figTrack,
   "interlacing-patterns.svg": figPatterns,
   "cover-jamming.svg": figCover,
+  "foliation-curl-div.svg": figCurlDiv,
+  "clairaut-friction.svg": figClairautFriction,
+  "geodesic-braid.svg": figGeodesicBraid,
 });
 
 /** Builds every figure. @returns {Record<string, string>} file name → SVG source */

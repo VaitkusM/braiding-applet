@@ -274,6 +274,58 @@ const SECTIONS = [
       ],
     ],
   },
+  {
+    title: "Braids as foliations (geodesic vector fields)",
+    body: [
+      [
+        "p",
+        "Vekhter et al. (2019) weave surfaces from ribbons laid along geodesic foliations: families of non-crossing geodesics, computed as unit vector fields with zero curl. On a centred mandrel a yarn family is also a family of non-crossing curves: its N/2 yarns are rotated copies of one yarn, i.e. leaves of the rotation-invariant unit field X = cos α(z) m ± sin α(z) e.",
+      ],
+      [
+        "fig",
+        "foliation-curl-div.svg",
+        15,
+        "Planar foliations: parallel lines, a pencil of lines and concentric circles",
+        "Schematic. For a unit field, curl X is the geodesic curvature of the leaves and div X their spreading, d ln ρ/ds = div X (ρ: leaf spacing). Both vanish only where K = 0.",
+      ],
+      [
+        "p",
+        "On the mandrel (σ: meridian arc length) Clairaut's relation gains a source term, and the yarn spacing follows the divergence:",
+      ],
+      [
+        "f",
+        String
+          .raw`\frac{d(r\sin\alpha)}{d\sigma}=-r\,\kappa_g,\qquad \mathrm{div}\,X=\frac{1}{r}\frac{d(r\cos\alpha)}{d\sigma}=\frac{d\ln\rho}{ds}`,
+      ],
+      [
+        "p",
+        "Friction lets the Clairaut function c = r sin α drift, but only at a bounded rate:",
+      ],
+      [
+        "f",
+        String
+          .raw`\Bigl|\frac{d(r\sin\alpha)}{d\sigma}\Bigr|\le\mu\,r\,\kappa_n\quad\Longleftrightarrow\quad|\mathrm{curl}\,X|\le\mu\,\kappa_n(X)`,
+      ],
+      [
+        "fig",
+        "clairaut-friction.svg",
+        16,
+        "Clairaut function and geodesic curvature with the friction band on the default taper",
+        "Default taper: the machine raises r sin α from 19.2 to 44.3 mm, a geodesic keeps it constant. Where the rise is too steep the yarn leaves the friction band and slips.",
+      ],
+      [
+        "p",
+        "For a geodesic family the spacing is a Jacobi field, ρ″ + Kρ = 0, so a geodesic braid inherits its coverage from the geometry. On a cylinder a steady braid is a pair of mirror geodesic foliations (helices); on a changing radius it is not.",
+      ],
+      [
+        "fig",
+        "geodesic-braid.svg",
+        17,
+        "Cover factor and take-up speed of the machine braid and of a geodesic braid on the default taper",
+        "Default taper: a geodesic braid through the braid at z = 250 mm would need a take-up rising from 23 to 93 mm/s (quasi-static), and its cover factor would drop to 0.43 (machine braid: 0.63).",
+      ],
+    ],
+  },
 ];
 
 const ASSUMPTIONS = [
@@ -295,6 +347,8 @@ const REFERENCES = [
   "Zhang Q., Beale D., Adanur S., Broughton R.M., Walker R.P. (1997). Structural analysis of a two-dimensional braided fabric. J. Textile Institute 88(1), 41–52. doi:10.1080/00405009708658528",
   "Wang R., Jiao W., Liu W., Yang F., He X. (2011). Slippage coefficient measurement for non-geodesic filament-winding process. Composites Part A 42(3), 303–309. doi:10.1016/j.compositesa.2010.12.002",
   "do Carmo M.P. (1976). Differential Geometry of Curves and Surfaces, §4-4 (Clairaut's relation).",
+  "Vekhter J., Zhuo J., Gil Fandino L.F., Huang Q., Vouga E. (2019). Weaving geodesic foliations. ACM Trans. Graph. 38(4), 34:1–34:22. doi:10.1145/3306346.3323043",
+  "Pottmann H., Huang Q., Deng B., Schiftner A., Kilian M., Guibas L., Wallner J. (2010). Geodesic patterns. ACM Trans. Graph. 29(4), 1–10. doi:10.1145/1778765.1778780",
 ];
 
 /** Live-value rows: [TeX label, unit, getter(ctx) → number | string]. */

@@ -27,22 +27,24 @@ follows in closed form. Mechanics, braid structure and the reference solutions a
 | 7       | When does friction hold a laid yarn in place?                          |
 | 8       | How do the yarns interlace?                                            |
 | 9       | How well does the braid cover the mandrel, and when does it jam?       |
-| 10–11   | How is the implementation validated, and what is idealised?            |
+| 10      | How do braids relate to geodesic vector fields and foliations?         |
+| 11–12   | How is the implementation validated, and what is idealised?            |
 
 **Notation.**
 
-| Symbol                 | Meaning                                                                |
-| ---------------------- | ---------------------------------------------------------------------- |
-| $N$, $m$               | carrier count; pattern $m/m$ (1 diamond, 2 regular, 3 Hercules)        |
-| $\omega$, $v$          | carrier revolution rate about the machine axis; take-up speed          |
-| $R_g$                  | guide-ring radius                                                      |
-| $r(z)$                 | mandrel profile (radius as a function of the axial coordinate)         |
-| $G$, $F$, $L$          | guide point, fell point, free length $L=\lvert G-F\rvert$              |
-| $t$, $n$, $b$          | Darboux frame at $F$: yarn tangent, outward normal, $b=n\times t$      |
-| $\kappa_n$, $\kappa_g$ | normal and geodesic curvature of the laid yarn (convex-positive)       |
-| $k_m$, $k_p$, $K$, $H$ | principal curvatures (meridian, parallel), Gaussian and mean curvature |
-| $\alpha$, $\beta$, $h$ | braid angle, lag angle, convergence length                             |
-| $w$, $T$, $\mu$        | yarn width, yarn tension, yarn–mandrel friction coefficient            |
+| Symbol                 | Meaning                                                                 |
+| ---------------------- | ----------------------------------------------------------------------- |
+| $N$, $m$               | carrier count; pattern $m/m$ (1 diamond, 2 regular, 3 Hercules)         |
+| $\omega$, $v$          | carrier revolution rate about the machine axis; take-up speed           |
+| $R_g$                  | guide-ring radius                                                       |
+| $r(z)$                 | mandrel profile (radius as a function of the axial coordinate)          |
+| $G$, $F$, $L$          | guide point, fell point, free length $L=\lvert G-F\rvert$               |
+| $t$, $n$, $b$          | Darboux frame at $F$: yarn tangent, outward normal, $b=n\times t$       |
+| $\kappa_n$, $\kappa_g$ | normal and geodesic curvature of the laid yarn (convex-positive)        |
+| $k_m$, $k_p$, $K$, $H$ | principal curvatures (meridian, parallel), Gaussian and mean curvature  |
+| $\alpha$, $\beta$, $h$ | braid angle, lag angle, convergence length                              |
+| $w$, $T$, $\mu$        | yarn width, yarn tension, yarn–mandrel friction coefficient             |
+| $X$, $\rho$            | unit tangent field of a yarn family, spacing of its leaves (Section 10) |
 
 **Reference case.** Several figures use a cylinder of radius $r=40$ mm in a machine with $N=16$
 carriers, $R_g=150$ mm, $\omega=1$ rad/s and $v=40$ mm/s. Then $\tan\alpha=\omega r/v=1$, so
@@ -527,7 +529,181 @@ With $n_a$ axial yarns of width $w_a$: $k_a=n_aw_a/(2\pi r)$ and $CF=1-(1-k)^2(1
 - This is the flat-strip ideal. Round yarns jam earlier (max $CF\approx0.82$, Zhang et al. 1997).
 - The model flags JAM but does not include yarn–yarn contact.
 
-## 10. Validation
+## 10. Braids as foliations: geodesic vector fields
+
+Vekhter et al. (2019) weave curved surfaces from thin ribbons. A ribbon bends easily out of its
+plane but hardly within it, so a woven ribbon must follow a geodesic. Laying out a weave then
+becomes the problem of covering the surface by families of non-crossing geodesics, **geodesic
+foliations**, which they compute as unit vector fields with vanishing curl. A braid also consists
+of families of non-crossing curves, but the machine chooses them, not a designer. This section
+reads the braid in the same language: which properties of a yarn family are geometric, why a braid
+on a changing radius is not a geodesic foliation, what friction allows instead, and what a geodesic
+braid would cost.
+
+### 10.1 A yarn family is a foliation
+
+A one-dimensional foliation covers a region by disjoint curves, its leaves. It can be described by
+a unit vector field $X$ tangent to the leaves or, as Vekhter et al. do when they place ribbons, by a
+function $\theta$ whose level sets are the leaves ($X$ is then $\nabla\theta$ rotated by 90°, up to
+scale). The foliation is geodesic if all its leaves are geodesics.
+
+On a centred mandrel, machine and mandrel are invariant under a rotation by $\Delta=4\pi/N$, so the
+$N/2$ yarns of one family are rotated copies of a single yarn. Where that yarn crosses every
+parallel once ($\lvert\alpha\rvert<90°$; in the preset runs $\lvert\alpha\rvert$ stays below
+55°), its rotations by _all_ angles, not only by multiples of $\Delta$, are disjoint and fill the
+braided region. They form a foliation of which the braid
+shows $N/2$ leaves. Its unit field depends only on the axial position:
+$$X_\pm=\cos\alpha(z)\thinspace m\pm\sin\alpha(z)\thinspace e,$$
+
+where $\alpha(z)$ is the braid angle of the "+" family and the "−" family is its mirror image in the
+meridian. How a yarn family bends, spreads and slips are properties of this vector field. (Off-axis
+the yarns of a family are no longer rotated copies; they are still leaves of a foliation, but not of
+a rotation-invariant one.)
+
+On a cylinder in steady state $\alpha$ is constant and $X_+\parallel v\thinspace\partial_z+\omega\thinspace\partial_\theta$:
+the leaves are helices. A constant combination of $\partial_\theta$ and $\partial_z$ is the example
+of a geodesic foliation that Vekhter et al. give for the cylinder, so a steady braid on a cylinder is
+a pair of mirror geodesic foliations.
+
+### 10.2 Curl and divergence of a unit field
+
+![Planar foliations: parallel lines, a pencil of lines and concentric circles](figures/foliation-curl-div.svg)
+
+**Figure 15.** Schematic: three planar foliations, drawn exactly. Parallel lines are geodesic and
+equally spaced; a pencil of lines is geodesic but spreads; concentric circles are equally spaced but
+bend. On a curved surface the first kind exists only where $K=0$.
+
+Let $X$ be a unit vector field on a surface and $JX$ its rotation by +90° in the tangent plane.
+Because $\langle\nabla_Y X,X\rangle=\frac12 Y\lvert X\rvert^2=0$ for every $Y$, curl and divergence
+reduce to one term each:
+$$\mathrm{curl}\thinspace X=\langle\nabla_X X,JX\rangle-\langle\nabla_{JX}X,X\rangle=\langle\nabla_X X,JX\rangle,\qquad \mathrm{div}\thinspace X=\langle\nabla_X X,X\rangle+\langle\nabla_{JX}X,JX\rangle=\langle\nabla_{JX}X,JX\rangle.$$
+
+- **Curl: the leaves bend.** $\mathrm{curl}\thinspace X$ is the geodesic curvature of the leaves (its
+  sign fixed by the orientation). This is the criterion Vekhter et al. build on: a unit field has
+  geodesic integral curves if and only if it is curl-free.
+- **Divergence: the leaves spread.** $\mathrm{div}\thinspace X$ is the geodesic curvature of the
+  orthogonal trajectories. It transports the spacing $\rho$ of neighbouring leaves along each leaf:
+  $$\frac{d\ln\rho}{ds}=\mathrm{div}\thinspace X.$$
+  To see this, take a function $\psi$ that is constant on the leaves and grows by 1 from one leaf to
+  the next. Then $\nabla\psi=\pm JX/\rho$, and $\mathrm{div}(J\nabla\psi)=0$ gives
+  $\mathrm{div}(X/\rho)=0$, which is the equation above. In the level-set representation,
+  $\lvert\nabla\theta\rvert$ is proportional to the leaf density $1/\rho$, and this equation is the
+  integrability condition of $\nabla\theta$: the density can be chosen across the leaves, but not
+  along them.
+- **Curvature couples the two.** The connection form of the orthonormal frame $(X,JX)$ is
+  $\omega=\langle\nabla X,JX\rangle=(\mathrm{curl}\thinspace X)\thinspace X^\flat+(\mathrm{div}\thinspace X)\thinspace(JX)^\flat$,
+  and the structure equation $d\omega=-K\thinspace dA$ ties it to the Gaussian curvature. A unit
+  field with vanishing curl and divergence therefore forces $K=0$: equally spaced geodesics exist
+  only on flat parts. In Figure 15 both vanish only for the parallel lines.
+
+For a braid family on the mandrel, write $\sigma$ for the meridian arc length
+($d\sigma=\sqrt{1+r'^2}\thinspace dz$) and $X=\cos\alpha\thinspace m+\sin\alpha\thinspace e$ with
+$\alpha=\alpha(\sigma)$. With $\nabla_m m=\nabla_m e=0$, $\nabla_e m=(r_\sigma/r)\thinspace e$ and
+$\nabla_e e=-(r_\sigma/r)\thinspace m$ one finds
+$$\kappa_g=-\frac{1}{r}\frac{d(r\sin\alpha)}{d\sigma},\qquad \mathrm{div}\thinspace X=\frac{1}{r}\frac{d(r\cos\alpha)}{d\sigma}.$$
+
+The minus sign comes from the conventions of Section 1: with $J$ turning $m$ towards $e$,
+$b=n\times t=-Jt$, so $\kappa_g=-\mathrm{curl}\thinspace X$. The first formula holds for any curve
+that crosses the parallels, on or off axis. It is **Clairaut's relation with a source term**:
+$$\frac{d(r\sin\alpha)}{d\sigma}=-r\thinspace\kappa_g.$$
+
+A geodesic keeps $c=r\sin\alpha$ constant; a laid yarn changes it exactly by its geodesic curvature.
+Along the simulated yarns on the default taper, cone, bulge and hourglass, the finite-difference form
+agrees with the closed-form $\kappa_g$ of Section 3.4 to 0.14 % of its maximum.
+
+The second formula is the spacing law in disguise. The yarns of a family are $\rho=d=(4\pi r/N)\cos\alpha$
+apart (Section 9), and $d\ln\rho/ds=\cos\alpha\thinspace d\ln(r\cos\alpha)/d\sigma=\mathrm{div}\thinspace X$.
+The cover factor $k=w/\rho$ therefore changes along a yarn as $d\ln k/ds=-\mathrm{div}\thinspace X$.
+
+### 10.3 Friction relaxes Clairaut's relation
+
+![Clairaut function and geodesic curvature with the friction band on the default taper](figures/clairaut-friction.svg)
+
+**Figure 16.** The default taper. Top: the Clairaut function $c=r\sin\alpha$ of the braid, of the
+quasi-static braid, and of the geodesic through the braid at $z=250$ mm. Bottom: $\kappa_g$ from
+the closed form (line) and from the rate of change of $c$ (dots), with the friction band
+$\pm\mu\kappa_n$; outside it the yarn slips.
+
+With Section 7, the no-slip condition $\lvert\kappa_g\rvert\le\mu\kappa_n$ becomes
+$$\Bigl\lvert\frac{d(r\sin\alpha)}{d\sigma}\Bigr\rvert\le\mu\thinspace r\thinspace\kappa_n=\mu\thinspace r\thinspace(k_m\cos^2\alpha+k_p\sin^2\alpha).$$
+
+A geodesic keeps its Clairaut constant. A yarn held by friction may let it drift, at a rate bounded
+by the normal curvature it rests on. For the vector field, friction replaces the geodesic condition
+$\mathrm{curl}\thinspace X=0$ by the band $\lvert\mathrm{curl}\thinspace X\rvert\le\mu\thinspace\kappa_n(X)$.
+On the default taper the machine raises $c$ from 19.2 mm to 44.3 mm (Figure 16). Friction allows
+this where the rise is gentle; on $307\le z\le406$ mm it is too steep and the yarn slips.
+
+**Cones.** On a cone ($r'$ constant) the quasi-static braid of Section 4.1 has $c=r\sin\alpha_{qs}$
+with $\tan\alpha_{qs}=\omega r/(v\sqrt{1+r'^2})$, and $dc/dr=\sin\alpha\thinspace(1+\cos^2\alpha)>0$.
+With $\kappa_n=\sin^2\alpha/(r\sqrt{1+r'^2})$ on a cone,
+$$\Bigl\lvert\frac{\kappa_g}{\kappa_n}\Bigr\rvert=\lvert r'\rvert\thinspace\frac{1+\cos^2\alpha}{\sin\lvert\alpha\rvert},$$
+
+so the braid can hold only on cones with $\lvert r'\rvert\le\mu\sin\lvert\alpha\rvert/(1+\cos^2\alpha)$.
+For $\mu=0.25$ this allows half-angles up to 4.1° at $\alpha=30°$, 6.7° at 45° and 9.8° at 60°:
+steeper braids tolerate steeper cones. The estimate ignores the lag of Section 4.3. On the default
+cone ($r'=0.043$) it gives 0.068–0.086 for $300\le z\le680$ mm, where the simulation gives
+0.076–0.083.
+
+### 10.4 The price of a geodesic braid
+
+![Cover factor and take-up speed of the machine braid and of a geodesic braid on the default taper](figures/geodesic-braid.svg)
+
+**Figure 17.** The default taper. Top: cover factor of the simulated braid and of the pair of mirror
+Clairaut foliations through the braid at $z=250$ mm ($c=\pm19.2$ mm). Bottom: the constant take-up
+speed of the run and the quasi-static schedule that would lay the geodesic pair.
+
+For a geodesic foliation the spacing is not free. With $\mathrm{curl}\thinspace X=0$ the structure
+equation reduces along each leaf to the Riccati equation
+$X(\mathrm{div}\thinspace X)+(\mathrm{div}\thinspace X)^2+K=0$. With $\mathrm{div}\thinspace X=(\ln\rho)'$
+this is the Jacobi equation
+$$\rho''+K\rho=0:$$
+
+neighbouring geodesics separate like a Jacobi field. Positive curvature focuses them and negative
+curvature spreads them; Pottmann et al. (2010) design geodesic patterns by sweeping a geodesic along
+such a field. The Clairaut family with constant $c$ has spacing
+$\rho=\frac{4\pi}{N}\sqrt{r^2-c^2}$, and with $d\sigma/ds=\cos\alpha$ one checks
+$\rho''=\frac{4\pi}{N}\cos\alpha\thinspace r_{\sigma\sigma}=-K\rho$.
+
+A geodesic braid would therefore inherit its coverage from the geometry. Figure 17 compares the
+machine's braid on the default taper with the pair of Clairaut foliations through it at $z=250$ mm.
+On the large diameter the geodesic yarns run at 20° and their cover factor drops to 0.43. The
+machine's braid ends at 54° with a cover factor of 0.63.
+
+Could the machine lay the geodesic pair? With constant speeds the quasi-static Clairaut function is
+$c_{qs}=\omega r^2/\sqrt{\omega^2r^2+v^2(1+r'^2)}$. It is constant on cylinders and never on cones;
+otherwise it is constant only on the special profiles that solve
+$\omega r^2=c\sqrt{\omega^2r^2+v^2(1+r'^2)}$. Instead, the take-up speed can follow the geometry:
+$$v(z)=\frac{\omega r\sqrt{r^2-c^2}}{c\sqrt{1+r'^2}}$$
+
+makes $\tan\alpha_{qs}=\tan\alpha_{geo}$, and both families become Clairaut foliations with $\pm c$.
+On the default taper this schedule runs from 23 to 93 mm/s. It is quasi-static: the lag of Section
+4.3 has to be compensated, which is what take-up speed generation by inverse kinematics does for a
+prescribed braid angle distribution (van Ravenhorst & Akkerman 2014). The applet runs at constant
+speeds.
+
+### 10.5 Families, ribbons and singularities
+
+- **Two and three families.** A weave can combine any families; Vekhter et al. use three that cross
+  at about 60° for triaxial weaves. A braider produces mirror pairs whose crossing angle $2\alpha$
+  the machine sets, plus, in a triaxial braid, the axial yarns. These run along the meridians: the
+  geodesic foliation with $c=0$, whose spacing grows like $r$
+  ($\mathrm{div}\thinspace m=r_\sigma/r$).
+- **Flat tapes.** Vekhter et al.'s ribbon principle applies to flat tows as well. If a flat,
+  inextensible tape of width $w$ follows a curve with geodesic curvature $\kappa_g$, its edges,
+  offset by $\pm w/2$ along $b$, have the length elements $(1\mp\frac{w}{2}\kappa_g)\thinspace ds$ to
+  first order. The tape must stretch one edge and compress the other by $w\kappa_g/2$, or buckle. On
+  the default taper $\lvert\kappa_g\rvert$ reaches 3.8 1/m: edge strains of ±0.96 % for $w=5$ mm.
+- **Singularities.** A surface with nonzero Euler characteristic carries no nowhere-vanishing vector
+  field, and geodesic foliations fail to exist on most surfaces. Vekhter et al. therefore allow
+  singular points, and combine the three triaxial families on a branched cover. The applet's
+  mandrels are annuli ($\chi=0$) and need no singularities. Closed ends would: a Clairaut geodesic
+  with $c\ne0$ turns back at the parallel $r=c$, whereas the machine drives $\tan\alpha\approx\omega r/v$
+  towards 0 near a pole. Such ends cannot be represented here (Section 12).
+
+`tests/foliation.test.js` checks Clairaut's relation with a source term along simulated yarns, the
+Jacobi equation for the spacing of Clairaut families, and the edge strain of flat tapes.
+
+## 11. Validation
 
 `deno task test` checks the core against:
 
@@ -538,12 +714,15 @@ With $n_a$ axial yarns of width $w_a$: $k_a=n_aw_a/(2\pi r)$ and $CF=1-(1-k)^2(1
 | Curved taper vs SciPy solution of the on-axis ODE (Section 3.7)                                          | $10^{-9}$ m at 0.5 mm steps; order 2     |
 | Closed-form $\kappa_n,\kappa_g$ vs finite differences of the deposited path (cone)                       | 0.2 %                                    |
 | General (per-yarn) solver vs symmetric solver; mirror symmetry of the two families                       | < $10^{-8}$ m                            |
-| Sphere zone: $\kappa_n=1/\rho$ in every direction, $K=1/\rho^2$                                          | $10^{-12}$                               |
+| Sphere zone of radius $R_s$: $\kappa_n=1/R_s$ in every direction, $K=1/R_s^2$                            | $10^{-12}$                               |
 | Clairaut invariant along geodesics                                                                       | $10^{-8}$ (analytic), $10^{-6}$ (spline) |
 | Passings on opposite sides, no carrier collisions, $m/m$ blocks along every yarn                         | exact                                    |
 | Crossing signs vs the gear-side rule; one yarn on top per crossing                                       | exact                                    |
+| Clairaut with a source term (Section 10.2) vs closed-form $\kappa_g$ (taper, cone, bulge, hourglass)     | < 0.3 % of the largest $\kappa_g$        |
+| Jacobi equation for the spacing of Clairaut geodesics (taper, bulge, hourglass)                          | residual < 0.5 % of $K\rho$              |
+| Edge strain of a flat tape vs $\mp w\kappa_g/2$ (default taper)                                          | 3 %                                      |
 
-## 11. Limitations
+## 12. Limitations
 
 - **Yarns:** flexible and inextensible, with constant tension and width (no flattening, no bending
   stiffness).
@@ -563,7 +742,7 @@ With $n_a$ axial yarns of width $w_a$: $k_a=n_aw_a/(2\pi r)$ and $CF=1-(1-k)^2(1
 `tools/figures/make.js` generates every figure as SVG in `docs/figures/`, using the applet's own
 core modules. Simulation figures come from actual runs (the reference cylinder, run to $t=25$ s, and
 the default taper, run to the end); curvature, geodesic, track, pattern and cover figures evaluate
-the same functions the applet uses. Figures 0 and 5 are schematic. Run `deno task figures` after a
+the same functions the applet uses. Figures 0, 5 and 15 are schematic. Run `deno task figures` after a
 change to the core; `tests/figures.test.js` fails when a committed figure is out of date. The
 in-app Theory tab shows the same files.
 
@@ -578,10 +757,14 @@ in-app Theory tab shows the same files.
   preforms. _Composites Part A_ 33, 1073–1081. doi:10.1016/S1359-835X(02)00075-1
 - Ko F.K. (1987). Braiding. In: _Engineered Materials Handbook_, Vol. 1: Composites. ASM
   International, 519–528.
+- Pottmann H., Huang Q., Deng B., Schiftner A., Kilian M., Guibas L., Wallner J. (2010). Geodesic
+  patterns. _ACM Trans. Graph._ 29(4), 1–10. doi:10.1145/1778765.1778780
 - van Ravenhorst J.H., Akkerman R. (2014). Circular braiding take-up speed generation using inverse
   kinematics. _Composites Part A_ 64, 147–158. doi:10.1016/j.compositesa.2014.04.020
 - van Ravenhorst J.H., Akkerman R. (2016). A yarn interaction model for circular braiding.
   _Composites Part A_ 81, 254–263. doi:10.1016/j.compositesa.2015.11.026
+- Vekhter J., Zhuo J., Gil Fandino L.F., Huang Q., Vouga E. (2019). Weaving geodesic foliations.
+  _ACM Trans. Graph._ 38(4), 34:1–34:22. doi:10.1145/3306346.3323043
 - Wang R., Jiao W., Liu W., Yang F., He X. (2011). Slippage coefficient measurement for
   non-geodesic filament-winding process. _Composites Part A_ 42(3), 303–309.
   doi:10.1016/j.compositesa.2010.12.002

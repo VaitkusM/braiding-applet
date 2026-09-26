@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="330" viewBox="0 0 760 330" role="img" aria-labelledby="t d">
+<title id="t">Curl and divergence of the unit field of a foliation</title>
+<desc id="d">Schematic, three planar foliations drawn exactly: parallel lines (curl and divergence zero), a pencil of lines (geodesic leaves whose spacing grows, divergence 1/ℓ) and concentric circles (equally spaced leaves that bend, curl 1/ℓ); ℓ is the distance from the centre.</desc>
+<rect x="0.5" y="0.5" width="759" height="329" rx="8" fill="#ffffff" stroke="#d0d7de" stroke-width="1.5"/>
+<clipPath id="clip-fol-0"><rect x="20" y="44" width="220" height="200"/></clipPath>
+<rect x="20" y="44" width="220" height="200" fill="#f6f8fa"/>
+<g clip-path="url(#clip-fol-0)">
+<line x1="-244.23" y1="132.58" x2="247.26" y2="-211.56" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-228.17" y1="155.52" x2="263.32" y2="-188.63" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-212.11" y1="178.46" x2="279.38" y2="-165.69" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-196.05" y1="201.39" x2="295.44" y2="-142.75" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-179.99" y1="224.33" x2="311.51" y2="-119.82" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-163.93" y1="247.26" x2="327.57" y2="-96.88" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-147.87" y1="270.2" x2="343.63" y2="-73.95" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-131.81" y1="293.14" x2="359.69" y2="-51.01" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-115.75" y1="316.07" x2="375.75" y2="-28.07" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-99.69" y1="339.01" x2="391.81" y2="-5.14" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-83.63" y1="361.95" x2="407.87" y2="17.8" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-67.57" y1="384.88" x2="423.93" y2="40.74" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-51.51" y1="407.82" x2="439.99" y2="63.67" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-35.44" y1="430.75" x2="456.05" y2="86.61" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-19.38" y1="453.69" x2="472.11" y2="109.54" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="-3.32" y1="476.63" x2="488.17" y2="132.48" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="12.74" y1="499.56" x2="504.23" y2="155.42" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+</g>
+<rect x="20" y="44" width="220" height="200" fill="none" stroke="#8c959f" stroke-width="1"/>
+<line x1="56.1" y1="127.38" x2="68.39" y2="118.78" fill="none" stroke="#1f2328" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="74.12,114.76 70.2,121.36 66.58,116.2" fill="#1f2328"/>
+<line x1="145.56" y1="133.1" x2="157.85" y2="124.5" fill="none" stroke="#1f2328" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="163.59,120.48 159.66,127.08 156.04,121.92" fill="#1f2328"/>
+<line x1="144.92" y1="201.92" x2="157.21" y2="193.31" fill="none" stroke="#1f2328" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="162.94,189.3 159.01,195.89 155.4,190.73" fill="#1f2328"/>
+<line x1="203.24" y1="143.99" x2="198.65" y2="137.44" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="195.21,132.52 200.86,135.89 196.44,138.99" fill="#1f2328"/>
+<line x1="203.24" y1="143.99" x2="207.83" y2="150.54" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="211.27,155.46 205.62,152.09 210.04,148.99" fill="#1f2328"/>
+<text x="213.24" y="145.99" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">ρ</text>
+<text x="213.24" y="145.99" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2328">ρ</text>
+<text x="130" y="30" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">parallel lines</text>
+<text x="130" y="30" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#1f2328">parallel lines</text>
+<text x="130" y="266" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">curl <tspan font-style="italic">X</tspan> = 0,  div <tspan font-style="italic">X</tspan> = 0</text>
+<text x="130" y="266" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2328">curl <tspan font-style="italic">X</tspan> = 0,  div <tspan font-style="italic">X</tspan> = 0</text>
+<text x="130" y="283" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">only where <tspan font-style="italic">K</tspan> = 0</text>
+<text x="130" y="283" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#57606a">only where <tspan font-style="italic">K</tspan> = 0</text>
+<clipPath id="clip-fol-1"><rect x="270" y="44" width="220" height="200"/></clipPath>
+<rect x="270" y="44" width="220" height="200" fill="#f6f8fa"/>
+<g clip-path="url(#clip-fol-1)">
+<line x1="259.89" y1="271.91" x2="657.7" y2="230.1" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="259.56" y1="269.84" x2="650.82" y2="186.68" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="259.02" y1="267.82" x2="639.44" y2="144.21" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="258.27" y1="265.87" x2="623.69" y2="103.17" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="257.32" y1="264" x2="603.73" y2="64" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="256.18" y1="262.24" x2="579.79" y2="27.13" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="254.86" y1="260.62" x2="552.12" y2="-7.03" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="253.38" y1="259.14" x2="521.03" y2="-38.12" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="251.76" y1="257.82" x2="486.87" y2="-65.79" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="250" y1="256.68" x2="450" y2="-89.73" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="248.13" y1="255.73" x2="410.83" y2="-109.69" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="246.18" y1="254.98" x2="369.79" y2="-125.44" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="244.16" y1="254.44" x2="327.32" y2="-136.82" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<line x1="242.09" y1="254.11" x2="283.9" y2="-143.7" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+</g>
+<rect x="270" y="44" width="220" height="200" fill="none" stroke="#8c959f" stroke-width="1"/>
+<line x1="360.38" y1="204.5" x2="373.37" y2="197" fill="none" stroke="#1f2328" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="379.43,193.5 374.94,199.73 371.79,194.27" fill="#1f2328"/>
+<line x1="368.72" y1="96.83" x2="377.54" y2="84.69" fill="none" stroke="#1f2328" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="381.66,79.03 380.09,86.54 374.99,82.84" fill="#1f2328"/>
+<line x1="280.27" y1="183.56" x2="286.37" y2="169.86" fill="none" stroke="#1f2328" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="289.22,163.46 289.25,171.14 283.49,168.57" fill="#1f2328"/>
+<line x1="317.68" y1="196.32" x2="317.5" y2="196.15" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="321.75,200.4 315.59,198.06 319.41,194.24" fill="#1f2328"/>
+<line x1="317.68" y1="196.32" x2="317.85" y2="196.5" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="313.6,192.25 319.76,194.59 315.94,198.41" fill="#1f2328"/>
+<text x="327.68" y="198.32" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">ρ</text>
+<text x="327.68" y="198.32" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2328">ρ</text>
+<line x1="416.53" y1="97.47" x2="421.54" y2="102.47" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="425.79,106.72 419.63,104.38 423.45,100.57" fill="#1f2328"/>
+<line x1="416.53" y1="97.47" x2="411.53" y2="92.46" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="407.28,88.21 413.43,90.55 409.62,94.37" fill="#1f2328"/>
+<text x="426.53" y="99.47" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">ρ</text>
+<text x="426.53" y="99.47" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2328">ρ</text>
+<text x="380" y="30" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">pencil of lines</text>
+<text x="380" y="30" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#1f2328">pencil of lines</text>
+<text x="380" y="266" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">curl <tspan font-style="italic">X</tspan> = 0,  div <tspan font-style="italic">X</tspan> = 1/ℓ</text>
+<text x="380" y="266" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2328">curl <tspan font-style="italic">X</tspan> = 0,  div <tspan font-style="italic">X</tspan> = 1/ℓ</text>
+<text x="380" y="283" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">geodesic leaves spread</text>
+<text x="380" y="283" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#57606a">geodesic leaves spread</text>
+<clipPath id="clip-fol-2"><rect x="520" y="44" width="220" height="200"/></clipPath>
+<rect x="520" y="44" width="220" height="200" fill="#f6f8fa"/>
+<g clip-path="url(#clip-fol-2)">
+<polyline points="554,274 553.92,270.86 553.69,267.73 553.31,264.61 552.77,261.51 552.08,258.45 551.24,255.42 550.26,252.44 549.13,249.51 547.86,246.64 546.44,243.83 544.89,241.1 543.21,238.44 541.41,235.88 539.47,233.4 537.42,231.02 535.25,228.75 532.98,226.58 530.6,224.53 528.12,222.59 525.56,220.79 522.9,219.11 520.17,217.56 517.36,216.14 514.49,214.87 511.56,213.74 508.58,212.76 505.55,211.92 502.49,211.23 499.39,210.69 496.27,210.31 493.14,210.08 490,210" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="582,274 581.89,269.49 581.56,264.98 581,260.5 580.23,256.05 579.24,251.65 578.04,247.29 576.62,243.01 575,238.79 573.17,234.66 571.14,230.63 568.91,226.7 566.5,222.89 563.9,219.2 561.12,215.64 558.17,212.22 555.05,208.95 551.78,205.83 548.36,202.88 544.8,200.1 541.11,197.5 537.3,195.09 533.37,192.86 529.34,190.83 525.21,189 520.99,187.38 516.71,185.96 512.35,184.76 507.95,183.77 503.5,183 499.02,182.44 494.51,182.11 490,182" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="610,274 609.86,268.11 609.42,262.24 608.7,256.39 607.69,250.59 606.4,244.84 604.83,239.17 602.99,233.57 600.87,228.08 598.48,222.69 595.83,217.43 592.93,212.31 589.78,207.33 586.38,202.52 582.76,197.87 578.91,193.41 574.85,189.15 570.59,185.09 566.13,181.24 561.48,177.62 556.67,174.22 551.69,171.07 546.57,168.17 541.31,165.52 535.92,163.13 530.43,161.01 524.83,159.17 519.16,157.6 513.41,156.31 507.61,155.3 501.76,154.58 495.89,154.14 490,154" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="638,274 637.82,266.74 637.29,259.49 636.4,252.28 635.16,245.13 633.56,238.04 631.63,231.04 629.35,224.14 626.73,217.36 623.79,210.72 620.52,204.23 616.94,197.91 613.06,191.78 608.87,185.84 604.41,180.11 599.66,174.61 594.65,169.35 589.39,164.34 583.89,159.59 578.16,155.13 572.22,150.94 566.09,147.06 559.77,143.48 553.28,140.21 546.64,137.27 539.86,134.65 532.96,132.37 525.96,130.44 518.87,128.84 511.72,127.6 504.51,126.71 497.26,126.18 490,126" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="666,274 665.79,265.36 665.15,256.75 664.1,248.18 662.62,239.66 660.73,231.24 658.42,222.91 655.71,214.71 652.6,206.65 649.1,198.75 645.22,191.03 640.96,183.52 636.34,176.22 631.36,169.16 626.05,162.35 620.41,155.81 614.45,149.55 608.19,143.59 601.65,137.95 594.84,132.64 587.78,127.66 580.48,123.04 572.97,118.78 565.25,114.9 557.35,111.4 549.29,108.29 541.09,105.58 532.76,103.27 524.34,101.38 515.82,99.9 507.25,98.85 498.64,98.21 490,98" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="694,274 693.75,263.99 693.02,254 691.79,244.07 690.08,234.2 687.89,224.43 685.22,214.78 682.07,205.27 678.47,195.93 674.41,186.78 669.91,177.84 664.98,169.12 659.62,160.66 653.85,152.48 647.69,144.58 641.15,137 634.25,129.75 627,122.85 619.42,116.31 611.52,110.15 603.34,104.38 594.88,99.02 586.16,94.09 577.22,89.59 568.07,85.53 558.73,81.93 549.22,78.78 539.57,76.11 529.8,73.92 519.93,72.21 510,70.98 500.01,70.25 490,70" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="722,274 721.72,262.62 720.88,251.26 719.49,239.96 717.54,228.74 715.05,217.63 712.01,206.65 708.44,195.84 704.34,185.22 699.73,174.81 694.61,164.64 688.99,154.73 682.9,145.11 676.34,135.8 669.34,126.82 661.9,118.2 654.05,109.95 645.8,102.1 637.18,94.66 628.2,87.66 618.89,81.1 609.27,75.01 599.36,69.39 589.19,64.27 578.78,59.66 568.16,55.56 557.35,51.99 546.37,48.95 535.26,46.46 524.04,44.51 512.74,43.12 501.38,42.28 490,42" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="750,274 749.69,261.24 748.75,248.52 747.19,235.85 745,223.28 742.21,210.83 738.8,198.53 734.8,186.41 730.21,174.5 725.04,162.84 719.3,151.44 713.01,140.33 706.18,129.55 698.83,119.12 690.98,109.06 682.65,99.39 673.85,90.15 664.61,81.35 654.94,73.02 644.88,65.17 634.45,57.82 623.67,50.99 612.56,44.7 601.16,38.96 589.5,33.79 577.59,29.2 565.47,25.2 553.17,21.79 540.72,19 528.15,16.81 515.48,15.25 502.76,14.31 490,14" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="778,274 777.65,259.87 776.61,245.77 774.88,231.74 772.47,217.81 769.37,204.02 765.6,190.4 761.16,176.98 756.08,163.79 750.35,150.86 743.99,138.24 737.03,125.94 729.46,114 721.32,102.44 712.63,91.29 703.39,80.59 693.65,70.35 683.41,60.61 672.71,51.37 661.56,42.68 650,34.54 638.06,26.97 625.76,20.01 613.14,13.65 600.21,7.92 587.02,2.84 573.6,-1.6 559.98,-5.37 546.19,-8.47 532.26,-10.88 518.23,-12.61 504.13,-13.65 490,-14" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="806,274 805.62,258.49 804.48,243.03 802.58,227.63 799.93,212.35 796.53,197.22 792.39,182.27 787.53,167.54 781.95,153.07 775.66,138.89 768.69,125.04 761.04,111.54 752.74,98.44 743.81,85.76 734.27,73.53 724.14,61.79 713.45,50.55 702.21,39.86 690.47,29.73 678.24,20.19 665.56,11.26 652.46,2.96 638.96,-4.69 625.11,-11.66 610.93,-17.95 596.46,-23.53 581.73,-28.39 566.78,-32.53 551.65,-35.93 536.37,-38.58 520.97,-40.48 505.51,-41.62 490,-42" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="834,274 833.59,257.12 832.34,240.28 830.28,223.52 827.39,206.89 823.69,190.41 819.19,174.14 813.89,158.11 807.81,142.36 800.97,126.92 793.38,111.84 785.06,97.15 776.03,82.88 766.3,69.08 755.92,55.77 744.89,42.98 733.24,30.76 721.02,19.11 708.23,8.08 694.92,-2.3 681.12,-12.03 666.85,-21.06 652.16,-29.38 637.08,-36.97 621.64,-43.81 605.89,-49.89 589.86,-55.19 573.59,-59.69 557.11,-63.39 540.48,-66.28 523.72,-68.34 506.88,-69.59 490,-70" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="862,274 861.55,255.75 860.21,237.54 857.97,219.42 854.85,201.43 850.85,183.61 845.98,166.01 840.25,148.68 833.68,131.64 826.28,114.95 818.07,98.64 809.08,82.75 799.31,67.33 788.79,52.4 777.56,38.01 765.63,24.18 753.04,10.96 739.82,-1.63 725.99,-13.56 711.6,-24.79 696.67,-35.31 681.25,-45.08 665.36,-54.07 649.05,-62.28 632.36,-69.68 615.32,-76.25 597.99,-81.98 580.39,-86.85 562.57,-90.85 544.58,-93.97 526.46,-96.21 508.25,-97.55 490,-98" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="890,274 889.52,254.37 888.07,234.79 885.67,215.31 882.31,195.96 878.01,176.81 872.78,157.89 866.62,139.24 859.55,120.93 851.6,102.98 842.77,85.44 833.09,68.36 822.59,51.77 811.28,35.72 799.2,20.24 786.38,5.38 772.84,-8.84 758.62,-22.38 743.76,-35.2 728.28,-47.28 712.23,-58.59 695.64,-69.09 678.56,-78.77 661.02,-87.6 643.07,-95.55 624.76,-102.62 606.11,-108.78 587.19,-114.01 568.04,-118.31 548.69,-121.67 529.21,-124.07 509.63,-125.52 490,-126" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<rect x="520" y="44" width="220" height="200" fill="none" stroke="#8c959f" stroke-width="1"/>
+<line x1="623.67" y1="209.53" x2="616.17" y2="196.54" fill="none" stroke="#1f2328" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="612.67,190.47 618.9,194.96 613.44,198.11" fill="#1f2328"/>
+<line x1="601.53" y1="102.83" x2="588.54" y2="95.33" fill="none" stroke="#1f2328" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="582.47,91.83 590.11,92.6 586.96,98.06" fill="#1f2328"/>
+<line x1="738.08" y1="195.41" x2="732.95" y2="181.32" fill="none" stroke="#1f2328" stroke-width="1.4" stroke-linecap="round"/>
+<polygon points="730.56,174.74 735.91,180.24 729.99,182.39" fill="#1f2328"/>
+<line x1="624.35" y1="139.65" x2="618.69" y2="145.31" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="614.45,149.55 616.78,143.4 620.6,147.22" fill="#1f2328"/>
+<line x1="624.35" y1="139.65" x2="630.01" y2="133.99" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="634.25,129.75 631.92,135.9 628.1,132.08" fill="#1f2328"/>
+<text x="634.35" y="141.65" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">ρ</text>
+<text x="634.35" y="141.65" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2328">ρ</text>
+<text x="630" y="30" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">concentric circles</text>
+<text x="630" y="30" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#1f2328">concentric circles</text>
+<text x="630" y="266" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">|curl <tspan font-style="italic">X</tspan>| = 1/ℓ,  div <tspan font-style="italic">X</tspan> = 0</text>
+<text x="630" y="266" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2328">|curl <tspan font-style="italic">X</tspan>| = 1/ℓ,  div <tspan font-style="italic">X</tspan> = 0</text>
+<text x="630" y="283" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">equally spaced leaves bend</text>
+<text x="630" y="283" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#57606a">equally spaced leaves bend</text>
+<text x="744" y="320" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">arrows: unit field <tspan font-style="italic">X</tspan> · ρ: spacing of neighbouring leaves · ℓ: distance from the centre</text>
+<text x="744" y="320" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#57606a">arrows: unit field <tspan font-style="italic">X</tspan> · ρ: spacing of neighbouring leaves · ℓ: distance from the centre</text>
+</svg>

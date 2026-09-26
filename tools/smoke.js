@@ -102,13 +102,13 @@ const SCENARIOS = [
 ];
 
 /**
- * In-page check of the Theory tab: all 15 figures of docs/figures/ are present and load (they are
+ * In-page check of the Theory tab: all 18 figures of docs/figures/ are present and load (they are
  * lazy-loaded, so loading is forced here; on the live site this checks that they are deployed).
  */
 async function checkTheoryFigures() {
   const imgs = [...document.querySelectorAll("#tab-theory .theory-fig img")];
   const problems = [];
-  if (imgs.length !== 15) problems.push(`expected 15 theory figures, found ${imgs.length}`);
+  if (imgs.length !== 18) problems.push(`expected 18 theory figures, found ${imgs.length}`);
   for (const img of imgs) img.loading = "eager";
   await Promise.all(imgs.map((img) => img.decode().catch(() => {})));
   for (const img of imgs) {

@@ -270,7 +270,8 @@ export class Svg {
 export function axes(s, o) {
   const X = (v) => o.x + ((v - o.xDomain[0]) / (o.xDomain[1] - o.xDomain[0])) * o.w;
   const Y = (v) => o.y + o.h - ((v - o.yDomain[0]) / (o.yDomain[1] - o.yDomain[0])) * o.h;
-  const xf = o.xFmt ?? ((v) => String(v)), yf = o.yFmt ?? ((v) => String(v));
+  const num = (v) => String(v).replace("-", "−"); // true minus sign
+  const xf = o.xFmt ?? num, yf = o.yFmt ?? num;
   for (const t of o.yTicks) {
     s.line(o.x, Y(t), o.x + o.w, Y(t), { stroke: C.grid, width: 1, cap: "butt" });
     s.text(o.x - 6, Y(t) + 4, yf(t), { size: 11, anchor: "end", color: C.muted, halo: false });
