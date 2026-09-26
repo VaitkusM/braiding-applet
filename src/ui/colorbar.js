@@ -35,13 +35,20 @@ export class ColorBar {
       title.textContent = lg.title + (lg.unit ? ` [${lg.unit}]` : "");
       block.appendChild(title);
       if (lg.kind) {
+        // The ramp centre is the pivot value `mid`. If mid coincides with an end (a one-signed
+        // curvature map), only the used half of the ramp is drawn.
+        const mid = lg.mid ?? (lg.min + lg.max) / 2;
+        let t0 = 0, t1 = 1, ends = [lg.min, mid, lg.max];
+        if (mid <= lg.min && lg.max > mid) [t0, ends] = [0.5, [mid, (mid + lg.max) / 2, lg.max]];
+        else if (mid >= lg.max && lg.min < mid) {
+          [t1, ends] = [0.5, [lg.min, (lg.min + mid) / 2, mid]];
+        }
         const ramp = document.createElement("div");
         ramp.className = "cb-ramp";
-        ramp.style.background = rampCss(lg.kind);
+        ramp.style.background = rampCss(lg.kind, t0, t1);
         const ticks = document.createElement("div");
         ticks.className = "cb-ticks";
-        const mid = lg.mid ?? (lg.min + lg.max) / 2; // ramp centre (pivot) value
-        for (const v of [lg.min, mid, lg.max]) {
+        for (const v of ends) {
           const s = document.createElement("span");
           s.textContent = fmt(v);
           ticks.appendChild(s);

@@ -202,7 +202,9 @@ $$\kappa_n(\alpha)=k_m\cos^2\alpha+k_p\sin^2\alpha.$$
 - On a cylinder: $k_m=0$, $k_p=1/r$, $K=0$, so $\kappa_n=\sin^2\alpha/r$.
 - On a waist ($r''>0$): $k_m<0$. Here $\kappa_n<0$ for $\tan^2\alpha<-k_m/k_p$, and the yarn
   bridges (Section 4.5).
-- The applet colours the mandrel by $K$ or $H$ with a diverging scale centred at 0.
+- The applet colours the mandrel by $K$ or $H$ (and the yarns by $\kappa_n$ or $\kappa_g$) with the
+  blue–green–red curvature map of geo-framework: green is zero, negative values run to blue and
+  positive ones to red, each sign scaled by its own extent.
 
 ## 7. Geodesics
 

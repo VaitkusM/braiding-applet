@@ -38,10 +38,17 @@ Deno.test("scales: full ranges per colouring", () => {
 Deno.test("scales: data ranges — centre for one sign, 0 for both, slip capped at 1", () => {
   const a = yarnRange("alpha", { mode: "data" }, { min: 38, max: 54 }, ctx);
   assert(a.min === 38 && a.mid === 46 && a.max === 54, "α centre");
+  // Curvature maps (κn, κg): green at 0, each sign by its own extent, one-signed → half range.
   const kn = yarnRange("kn", { mode: "data" }, { min: 10, max: 20 }, ctx);
-  assert(kn.mid === 15, "positive-only κn: centre");
+  assert(kn.min === 0 && kn.mid === 0 && kn.max === 20, `positive-only κn: ${JSON.stringify(kn)}`);
   const kg = yarnRange("kg", { mode: "data" }, { min: -1, max: 3 }, ctx);
   assert(kg.min === -1 && kg.mid === 0 && kg.max === 3, "κg with both signs: mid 0");
+  const noise = yarnRange("kg", { mode: "data" }, { min: -1e-6, max: 2e-6 }, ctx);
+  assertClose(noise.min, -0.6, 1e-12, "noise floor: 2 % of κ_max");
+  assertClose(noise.max, 0.6, 1e-12, "noise floor: 2 % of κ_max");
+  // Sequential signed quantity (pressure) keeps centre / zero midpoint.
+  const p = yarnRange("pressure", { mode: "data" }, { min: 50, max: 150 }, ctx);
+  assert(p.mid === 100, "pressure centre");
   const sl = yarnRange("slip", { mode: "data" }, { min: 0.1, max: 2.5 }, ctx);
   assert(sl.max === 1 && sl.min === 0.1, "slip range capped at μ (above: status colour)");
   // Near-constant data is widened to 2 % of the full range, clamped at 0 for unsigned values.
@@ -59,9 +66,13 @@ Deno.test("scales: data ranges — centre for one sign, 0 for both, slip capped 
   assert(u.min === -2 && u.mid === 0.5 && u.max === 4, "custom");
 });
 
-Deno.test("scales: mandrel auto range is symmetric about 0", () => {
+Deno.test("scales: mandrel auto range — green at 0, signs scaled separately", () => {
   const r = mandrelRange({ mode: "auto" }, { min: -114, max: 60 });
-  assert(r.min === -114 && r.mid === 0 && r.max === 114, "±max |K|");
+  assert(r.min === -114 && r.mid === 0 && r.max === 60, "each sign by its own extent");
+  const h = mandrelRange({ mode: "auto" }, { min: 12, max: 20 });
+  assert(h.min === 0 && h.mid === 0 && h.max === 20, "one-signed → half range");
+  const tiny = mandrelRange({ mode: "auto" }, { min: -1e-9, max: 50 });
+  assertClose(tiny.min, -1, 1e-12, "negative side floored at 2 % of max |value|");
   const z = mandrelRange({ mode: "auto" }, { min: 0, max: 0 });
   assert(z.min === -1 && z.max === 1, "K ≡ 0 → unit range");
   assert(
@@ -133,6 +144,27 @@ Deno.test("scales: orderBounds keeps lo ≤ min < mid < max ≤ hi for many rand
     const o = orderBounds(s, moved, B);
     assert(
       o.min >= B.lo - 1e-9 && o.min < o.mid && o.mid < o.max && o.max <= B.hi + 1e-9,
+      `${JSON.stringify(s)} (${moved}) → ${JSON.stringify(o)}`,
+    );
+  }
+});
+
+Deno.test("scales: non-strict ordering (curvature maps) keeps lo ≤ min ≤ mid ≤ max ≤ hi", () => {
+  const B = { lo: 0, hi: 25, step: 0.1 };
+  const seed0 = orderBounds({ min: 0, mid: 0, max: 25 }, "mid", B, false);
+  assert(
+    seed0.min === 0 && seed0.mid === 0 && seed0.max === 25,
+    "half range kept: " + JSON.stringify(seed0),
+  );
+  let seed = 3;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let n = 0; n < 5000; n++) {
+    const s = { min: -5 + 35 * rnd(), mid: -5 + 35 * rnd(), max: -5 + 35 * rnd() };
+    const moved = ["min", "mid", "max"][Math.floor(3 * rnd())];
+    const o = orderBounds(s, moved, B, false);
+    assert(
+      o.min >= B.lo - 1e-9 && o.min <= o.mid && o.mid <= o.max && o.max <= B.hi + 1e-9 &&
+        o.max - o.min >= B.step - 1e-9,
       `${JSON.stringify(s)} (${moved}) → ${JSON.stringify(o)}`,
     );
   }

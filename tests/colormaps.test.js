@@ -1,6 +1,6 @@
 /** Colour-scale sanity: monotone lightness (sequential, each diverging arm), neutral midpoint. */
 import {
-  diverging,
+  curvatureMap,
   hexToRgb,
   mixOklab,
   pivotScale,
@@ -11,7 +11,6 @@ import {
 import { assert, assertClose } from "./assert.js";
 
 const L = (rgb) => rgbToOklab(rgb)[0];
-const C = (rgb) => Math.hypot(rgbToOklab(rgb)[1], rgbToOklab(rgb)[2]);
 
 Deno.test("colormaps: sequential lightness increases monotonically", () => {
   let prev = -1;
@@ -22,16 +21,42 @@ Deno.test("colormaps: sequential lightness increases monotonically", () => {
   }
 });
 
-Deno.test("colormaps: diverging arms are monotone and the midpoint is neutral", () => {
-  assert(C(diverging(0)) < 0.02, "gray midpoint (low chroma)");
-  for (const sign of [1, -1]) {
-    let prev = Infinity;
-    for (let i = 0; i <= 25; i++) {
-      const l = L(diverging((sign * i) / 25));
-      assert(l < prev + 1e-12, `arm ${sign} monotone at ${i}`);
-      prev = l;
+Deno.test("colormaps: curvature map reproduces geo-framework's colorMap exactly", () => {
+  // Literal port of geo-framework visualization.cc: HSV2RGB and colorMap(min, max, d).
+  const HSV2RGB = ([h0, sat, val]) => {
+    const c = val * sat, h = h0 / 60, x = c * (1 - Math.abs((h % 2) - 1)), m = val - c;
+    const add = (v) => [m + v[0], m + v[1], m + v[2]];
+    if (h <= 1) return add([c, x, 0]);
+    if (h <= 2) return add([x, c, 0]);
+    if (h <= 3) return add([0, c, x]);
+    if (h <= 4) return add([0, x, c]);
+    if (h <= 5) return add([x, 0, c]);
+    if (h <= 6) return add([c, 0, x]);
+    return [m, m, m];
+  };
+  const colorMap = (min, max, d) => {
+    const red = 0, green = 120, blue = 240;
+    if (d < 0) {
+      const alpha = min ? Math.min(d / min, 1) : 1;
+      return HSV2RGB([green * (1 - alpha) + blue * alpha, 1, 1]);
     }
+    const alpha = max ? Math.min(d / max, 1) : 1;
+    return HSV2RGB([green * (1 - alpha) + red * alpha, 1, 1]);
+  };
+  let seed = 11;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let n = 0; n < 4000; n++) {
+    const min = -rnd() * 50, max = rnd() * 80, d = (rnd() - 0.4) * 140;
+    const ours = curvatureMap(pivotScale(d, min, 0, max)), ref = colorMap(min, max, d);
+    for (let k = 0; k < 3; k++) assertClose(ours[k], ref[k], 1e-12, `d=${d} min=${min} max=${max}`);
   }
+  assert(rgbToHex(curvatureMap(0)) === "#0000ff", "most negative: blue");
+  assert(rgbToHex(curvatureMap(0.5)) === "#00ff00", "zero: green");
+  assert(rgbToHex(curvatureMap(1)) === "#ff0000", "most positive: red");
+  assert(
+    rgbToHex(curvatureMap(0.25)) === "#00ffff" && rgbToHex(curvatureMap(0.75)) === "#ffff00",
+    "cyan / yellow",
+  );
 });
 
 Deno.test("colormaps: OKLab round trip and hex helpers", () => {

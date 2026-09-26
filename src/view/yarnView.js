@@ -27,6 +27,7 @@ import { LineSegmentsGeometry } from "three/addons/lines/LineSegmentsGeometry.js
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import {
   AXIAL_COLOR,
+  curvatureMap,
   hexToRgb,
   pivotScale,
   sequential,
@@ -141,6 +142,7 @@ export class YarnView {
     sim.yarns.forEach((y, k) => this.entries.push(this.makeEntry(y, sim.crossings.events[k], k)));
     sim.axialYarns.forEach((y) => this.entries.push(this.makeEntry(y, null, -1)));
     this.applySelection();
+    this.applyToneMapping();
   }
 
   /** Creates the drawable + bookkeeping for one yarn. */
@@ -236,6 +238,7 @@ export class YarnView {
       full,
       bounds: sliderBounds(full, range),
       unit: def.unit,
+      zeroPivot: !!def.curvature, // green at 0; custom mid may coincide with an end
     };
   }
 
@@ -326,7 +329,9 @@ export class YarnView {
       if (r > this.scaleCtx.mu) return hexLin(STATUS.critical);
     }
     const v = def.value(y, i, this.scaleCtx), R = this.range;
-    return Number.isFinite(v) ? lin(sequential(pivotScale(v, R.min, R.mid, R.max))) : neutral;
+    if (!Number.isFinite(v)) return neutral;
+    const t = pivotScale(v, R.min, R.mid, R.max);
+    return lin(def.curvature ? curvatureMap(t) : sequential(t));
   }
 
   /** Colour-bar description for the current mode (see ui/colorbar in app.js). */
@@ -344,7 +349,7 @@ export class YarnView {
       return {
         title: `${def.label}${extra} · ${what}`,
         unit: def.unit,
-        kind: "sequential",
+        kind: def.curvature ? "curvature" : "sequential",
         min: R.min,
         mid: R.mid,
         max: R.max,
@@ -386,9 +391,23 @@ export class YarnView {
   /** Changes the colour mode and recolours every ring. */
   setColorMode(mode) {
     this.colorMode = mode;
+    this.applyToneMapping();
     this.range = this.effectiveRange();
     this.recolorAll();
     this.legendVersion++;
+  }
+
+  /**
+   * Curvature maps (κn, κg) are drawn without tone mapping so that their hues are exact (ACES would
+   * turn the pure green into a pale yellow-green); all other colourings stay tone-mapped.
+   */
+  applyToneMapping() {
+    const exact = !!YARN_SCALES[this.colorMode]?.curvature;
+    for (const m of [this.material, this.selectedMaterial]) {
+      if (m.toneMapped === !exact) continue;
+      m.toneMapped = !exact;
+      m.needsUpdate = true;
+    }
   }
 
   /** Recomputes every ring colour (uploaded in full by the next sync). */

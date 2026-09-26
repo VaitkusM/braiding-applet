@@ -11,7 +11,8 @@
 
 import { makeProfile, validateProfile } from "../core/profiles.js";
 import { profileSpec } from "../params.js";
-import { diverging, INK, rgbToHex, STATUS } from "../view/colormaps.js";
+import { curvatureMap, INK, pivotScale, rgbToHex, STATUS } from "../view/colormaps.js";
+import { zeroPivotRange } from "../view/scales.js";
 
 const R_MIN_MM = 2, R_MAX_MM = 200;
 
@@ -59,7 +60,9 @@ export class ProfileEditor {
     host.appendChild(el("h3", "", "Colour: Gaussian curvature K"));
     const legend = el("p", "note");
     legend.textContent = "Blue: K < 0 (saddle-like, e.g. a waist — yarns may bridge). " +
-      "Gray: K = 0 (cylinder, cone). Red: K > 0 (bulge, dome-like). The vertical line marks the current fell line.";
+      "Green: K = 0 (cylinder, cone). Red: K > 0 (bulge, dome-like). Each sign is scaled by its " +
+      "largest value on this profile (as the mandrel's curvature map in the 3D view). " +
+      "The vertical line marks the current fell line.";
     host.appendChild(legend);
 
     this.drag = -1;
@@ -216,21 +219,24 @@ export class ProfileEditor {
       }
       g.closePath();
       g.fill();
-      // Outline coloured by K (diverging, symmetric in max |K|).
+      // Outline coloured by K with the curvature map (as the mandrel in the 3D view: green = 0,
+      // each sign scaled by its own extent on this profile).
       const Ks = [];
-      let kMax = 0;
+      let kLo = Infinity, kHi = -Infinity;
       for (let i = 0; i <= n; i++) {
         const e = prof.evaluate((i / n) * prof.length);
         const K = -e.d2r / (e.r * (1 + e.dr * e.dr) ** 2);
         Ks.push(K);
-        kMax = Math.max(kMax, Math.abs(K));
+        kLo = Math.min(kLo, K);
+        kHi = Math.max(kHi, K);
       }
+      const KR = zeroPivotRange(kLo, kHi, 0.02 * Math.max(Math.abs(kLo), Math.abs(kHi)));
       g.lineWidth = 3;
       g.lineCap = "round";
       for (const sign of [1, -1]) {
         for (let i = 0; i < n; i++) {
           const z0 = (i / n) * prof.length, z1 = ((i + 1) / n) * prof.length;
-          g.strokeStyle = kMax > 0 ? rgbToHex(diverging(Ks[i] / kMax)) : rgbToHex(diverging(0));
+          g.strokeStyle = rgbToHex(curvatureMap(pivotScale(Ks[i], KR.min, KR.mid, KR.max)));
           g.beginPath();
           g.moveTo(X(z0 * 1e3), Y(sign * prof.evaluate(z0).r * 1e3));
           g.lineTo(X(z1 * 1e3), Y(sign * prof.evaluate(z1).r * 1e3));

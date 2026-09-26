@@ -36,6 +36,8 @@ There is no build step and no Node. Browser dependencies come from the import ma
 - **Colour.** Colours come from `src/view/colormaps.js`, whose categorical slots are validated for
   colour-vision deficiency. Keep "color follows the entity": "+" orange, "−" aqua, quasi-static blue,
   geodesic yellow. Keep status colours for status only, and never add unlabelled colour encodings.
+  Curvature maps (κn, κg, K, H) use the blue–green–red map of geo-framework with green = 0
+  (`curvatureMap`, zero-pivoted ranges in `scales.js`), drawn without tone mapping.
 - **Physics changes must be documented and validated.**
   1. Update `docs/THEORY.md` and the Theory panel (`src/ui/theoryPanel.js`).
   2. Keep or extend the validation tests: analytic cylinder solution, Du–Popper transient, SciPy

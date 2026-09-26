@@ -99,13 +99,18 @@ const SCENARIOS = [
  * In-page check of all colour scales (runs in the browser; returns a list of problems). Expected
  * ranges are computed here from the simulation data and the surface — independently of
  * src/view/scales.js — and compared with the colour-bar ticks.
+ *  - sequential scales (α, slip, pressure): [min, centre (or 0 for both signs), max];
+ *  - curvature maps (κn, κg, mandrel K/H; geo-framework convention): green at 0,
+ *    [min(lo, 0), 0, max(hi, 0)], each occurring side at least 2 % of the largest magnitude,
+ *    drawn without tone mapping; a one-signed map shows half a colour bar.
  */
 function checkColourScales() {
   const app = globalThis.__braid.app, sim = app.sim, problems = [];
   app.playing = false;
   const ticksOf = (n) =>
-    [...(document.querySelectorAll("#colorbar .cb-ticks")[n]?.children ?? [])]
-      .map((e) => Number(e.textContent));
+    [...(document.querySelectorAll("#colorbar .cb-ticks")[n]?.children ?? [])].map((e) =>
+      Number(e.textContent)
+    );
   const setDisplay = (d) => {
     Object.assign(app.display, d);
     for (const k of Object.keys(d)) app.applyDisplay(k);
@@ -121,17 +126,29 @@ function checkColourScales() {
       re.test(c.textContent) && c.style.display !== "none"
     ).length;
   const near = (a, b, tol) => Math.abs(a - b) <= tol;
+  const fmt = (v) => v.map((x) => x.toPrecision(3)).join(" / ");
+  const zeroPivot = (lo, hi, floor) => {
+    const a = lo < 0 ? Math.min(lo, -floor) : 0, b = hi > 0 ? Math.max(hi, floor) : 0;
+    return a === 0 && b === 0 ? [-(floor || 1), 0, floor || 1] : [a, 0, b];
+  };
+  // Ticks the colour bar draws for a range [min, mid, max] (half bar when mid sits at an end).
+  const ticksFor = (
+    [a, m, b],
+  ) => (m <= a ? [m, (m + b) / 2, b] : m >= b ? [a, (a + m) / 2, m] : [a, m, b]);
+  const signedMid = (lo, hi) => (lo < 0 && hi > 0 ? 0 : (lo + hi) / 2);
 
   // Independent references: principal curvatures sampled with SurfaceOfRevolution.principal.
-  let knMin = Infinity, knMax = -Infinity, kAbs = 0, kMaxAbs = 0;
+  let knMin = Infinity, knMax = -Infinity, kAbs = 0, kLo = Infinity, kHi = -Infinity;
   for (let i = 0; i <= 2000; i++) {
     const p = sim.surface.principal((i / 2000) * sim.profile.length);
     knMin = Math.min(knMin, p.k_m, p.k_p);
     knMax = Math.max(knMax, p.k_m, p.k_p);
     kAbs = Math.max(kAbs, Math.abs(p.k_m), Math.abs(p.k_p));
-    kMaxAbs = Math.max(kMaxAbs, Math.abs(p.K));
+    kLo = Math.min(kLo, p.K);
+    kHi = Math.max(kHi, p.K);
   }
   const mu = sim.config.friction, T = sim.config.tension;
+  const curvature = { kn: true, kg: true };
   const values = {
     alpha: (y, i) => Math.abs(y.alpha[i]) * 180 / Math.PI,
     slip: (y, i) => Math.abs(y.slip[i]) / mu,
@@ -139,11 +156,10 @@ function checkColourScales() {
     kg: (y, i) => y.kg[i],
     pressure: (y, i) => T * y.kn[i],
   };
-  const signedMid = (lo, hi) => (lo < 0 && hi > 0 ? 0 : (lo + hi) / 2);
   const full = {
     alpha: [0, 45, 90],
     slip: [0, 0.5, 1],
-    kn: [knMin, signedMid(knMin, knMax), knMax],
+    kn: zeroPivot(knMin, knMax, 0),
     kg: [-kAbs, 0, kAbs],
     pressure: [T * knMin, signedMid(T * knMin, T * knMax), T * knMax],
   };
@@ -163,47 +179,52 @@ function checkColourScales() {
       }
     }
     if (mode === "slip") [hi, lo] = [Math.min(hi, 1), Math.min(lo, Math.min(hi, 1))];
-    const span = hi - lo, fullSpan = full[mode][2] - full[mode][0];
-    const tol = 0.03 * Math.max(span, 0.02 * fullSpan) +
+    const f = full[mode], fullSpan = f[2] - f[0];
+    const mag = Math.max(Math.abs(f[0]), Math.abs(f[2]));
+    const tol = 0.03 * Math.max(hi - lo, 0.02 * fullSpan) +
       0.06 * Math.max(Math.abs(lo), Math.abs(hi));
     let t = ticksOf(0);
-    if (span >= 0.02 * fullSpan) {
-      const mid = mode === "alpha" || mode === "slip" ? (lo + hi) / 2 : signedMid(lo, hi);
-      if (!(near(t[0], lo, tol) && near(t[1], mid, tol) && near(t[2], hi, tol))) {
-        problems.push(
-          `${mode} data: ticks ${t} vs ${lo.toPrecision(3)} / ${mid.toPrecision(3)} / ${
-            hi.toPrecision(3)
-          }`,
-        );
-      }
+    let expect = null;
+    if (curvature[mode]) expect = ticksFor(zeroPivot(lo, hi, 0.02 * mag));
+    else if (hi - lo >= 0.02 * fullSpan) {
+      expect = [lo, mode === "alpha" || mode === "slip" ? (lo + hi) / 2 : signedMid(lo, hi), hi];
+    }
+    if (expect && !expect.every((v, k) => near(t[k], v, tol))) {
+      problems.push(`${mode} data: ticks ${t} vs ${fmt(expect)}`);
+    }
+    if (app.yarnView.material.toneMapped === !!curvature[mode]) {
+      problems.push(`${mode}: toneMapped = ${app.yarnView.material.toneMapped}`);
     }
     if (visible(/yarn colour scale/) !== 1) problems.push(`${mode}: scale selector not shown`);
     // Full range.
     scaleEvent("yarn", "mode", "full");
     t = ticksOf(0);
-    const f = full[mode],
-      ftol = 0.02 * (f[2] - f[0]) + 0.06 * Math.max(Math.abs(f[0]), Math.abs(f[2]));
-    if (!(near(t[0], f[0], ftol) && near(t[1], f[1], ftol) && near(t[2], f[2], ftol))) {
-      problems.push(`${mode} full: ticks ${t} vs ${f.map((x) => x.toPrecision(3))}`);
+    const ftol = 0.02 * fullSpan + 0.06 * mag, ft = ticksFor(f);
+    if (!ft.every((v, k) => near(t[k], v, ftol))) {
+      problems.push(`${mode} full: ticks ${t} vs ${fmt(ft)}`);
     }
-    // Custom: starts from the range shown, three sliders, bounds kept ordered.
+    // Custom: starts from the range shown (green stays at 0 for curvature maps), bounds ordered.
+    const ordered = (q) =>
+      curvature[mode]
+        ? q.min <= q.mid && q.mid <= q.max && q.min < q.max
+        : q.min < q.mid && q.mid < q.max;
     scaleEvent("yarn", "mode", "custom");
     if (visible(/↳ (min|mid|max)/) !== 3) problems.push(`${mode} custom: sliders not shown`);
     const sp = app.display.yarnScales[mode];
-    if (!(sp.min < sp.mid && sp.mid < sp.max)) {
-      problems.push(`${mode} custom seed ${JSON.stringify(sp)}`);
+    if (!ordered(sp)) problems.push(`${mode} custom seed ${JSON.stringify(sp)}`);
+    if (curvature[mode] && sp.mid !== 0) {
+      problems.push(`${mode}: custom seed moved the green off 0`);
     }
     if (!(near(sp.min, f[0], ftol) && near(sp.max, f[2], ftol))) {
       problems.push(`${mode} custom did not start from the range shown: ${JSON.stringify(sp)}`);
     }
     scaleEvent("yarn", "min", sp.max + 1e6); // absurd value: must be clamped and reordered
     const s2 = app.display.yarnScales[mode];
-    if (!(s2.min < s2.mid && s2.mid < s2.max)) {
-      problems.push(`${mode} ordering ${JSON.stringify(s2)}`);
-    }
+    if (!ordered(s2)) problems.push(`${mode} ordering ${JSON.stringify(s2)}`);
     t = ticksOf(0);
-    if (!(near(t[0], s2.min, ftol) && near(t[2], s2.max, ftol))) {
-      problems.push(`${mode} custom ticks ${t}`);
+    const ct = ticksFor([s2.min, s2.mid, s2.max]);
+    if (!(near(t[0], ct[0], ftol) && near(t[2], ct[2], ftol))) {
+      problems.push(`${mode} custom ticks ${t} vs ${fmt(ct)}`);
     }
   }
   // Each colouring keeps its own scale.
@@ -217,22 +238,26 @@ function checkColourScales() {
   if (visible(/yarn colour scale/) !== 0) {
     problems.push("yarn scale selector shown for family colours");
   }
+  if (app.yarnView.material.toneMapped !== true) {
+    problems.push("family colours must be tone-mapped");
+  }
 
-  // Mandrel: K auto range = ±max |K|, custom mid at the neutral colour.
+  // Mandrel K: curvature map of the K values, exact hues; custom with the green moved.
   setDisplay({ mandrelColor: "K" });
   let t = ticksOf(0);
-  if (
-    !(near(t[0], -kMaxAbs, 0.03 * kMaxAbs) && t[1] === 0 && near(t[2], kMaxAbs, 0.03 * kMaxAbs))
-  ) {
-    problems.push(`mandrel K auto: ticks ${t} vs ±${kMaxAbs.toPrecision(3)}`);
+  const kMag = Math.max(Math.abs(kLo), Math.abs(kHi)),
+    ek = ticksFor(zeroPivot(kLo, kHi, 0.02 * kMag));
+  if (!ek.every((v, k) => near(t[k], v, 0.03 * kMag))) {
+    problems.push(`mandrel K auto: ticks ${t} vs ${fmt(ek)}`);
   }
+  if (app.mandrelView.mesh.material.toneMapped !== false) problems.push("mandrel K is tone-mapped");
   scaleEvent("mandrel", "mode", "custom");
   if (visible(/↳ (min|mid|max)/) !== 3) problems.push("mandrel custom: sliders not shown");
-  const midK = 0.25 * kMaxAbs;
+  const midK = 0.25 * kMag;
   scaleEvent("mandrel", "mid", midK);
   t = ticksOf(0);
   const mk = app.display.mandrelScales.K;
-  if (!(near(t[1], mk.mid, 0.05 * kMaxAbs) && near(mk.mid, midK, 0.05 * kMaxAbs))) {
+  if (!(near(t[1], mk.mid, 0.05 * kMag) && near(mk.mid, midK, 0.05 * kMag))) {
     problems.push(`mandrel custom mid: ticks ${t}, spec ${JSON.stringify(mk)}`);
   }
   // Flat colour: matte material with the chosen colour, picker shown, no legend.

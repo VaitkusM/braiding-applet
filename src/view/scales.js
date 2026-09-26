@@ -9,16 +9,23 @@
  *   alpha     |α| [°]                 full: 0 … 90
  *   slip      |κg/κn| / μ [× μ]       full: 0 … 1 (values above 1 slip and are drawn in status red)
  *   kn        κn [1/m]                full: all normal curvatures the mandrel can produce, i.e. the
- *                                     range of its principal curvatures (Euler's formula)
+ *                                     range of its principal curvatures (Euler's formula), with 0
  *   kg        κg [1/m]                full: ±κ_max, the largest |principal curvature| of the mandrel
  *                                     (a path that does not slip has |κg| ≤ μ κn ≤ κ_max for μ ≤ 1)
- *   pressure  p = T κn [N/m]          full: T × the κn range
+ *   pressure  p = T κn [N/m]          full: T × the principal-curvature range
  * "data" spans the values of the deposited bias yarns (tie samples and axial yarns excluded).
- * For signed quantities (κn, κg, p) whose range contains both signs, the midpoint is 0, so the
- * colour still tells the sign; otherwise it is the centre of the range.
  *
- * Mandrel colourings (K, H) use the diverging ramp; "auto" is symmetric about 0 (±max |value| on
- * this mandrel), "custom" takes min / mid / max with mid at the neutral colour.
+ * Two kinds of scale:
+ *  - sequential (α, slip, p): range [min, max] with its centre as midpoint — except that a signed
+ *    quantity whose range contains both signs uses 0 as midpoint, so the colour still tells the sign;
+ *  - CURVATURE MAPS (κn, κg on the yarns; K, H on the mandrel): the blue–green–red convention of
+ *    geo-framework — green is always 0 (min ≤ 0 ≤ max) and each sign is scaled separately by its
+ *    own extent. If only one sign occurs, that side alone is used (the colour bar shows half the
+ *    ramp). Unlike geo-framework no percentile cut-off is applied, but an extent never shrinks below
+ *    2 % of the largest possible magnitude, so numerical noise around 0 is not stretched to full
+ *    blue / red.
+ * Mandrel colourings (K, H): "auto" = the range of the values on this mandrel (as above),
+ * "custom" = min / mid / max with mid at the green.
  */
 
 const DEG = 180 / Math.PI;
@@ -52,15 +59,17 @@ export const YARN_SCALES = Object.freeze({
     label: "Normal curvature κn (convex > 0)",
     unit: "1/m",
     signed: true,
+    curvature: true,
     value: (y, i) => y.kn[i],
-    full: (ctx) => signedRange(ctx.knMin, ctx.knMax),
+    full: (ctx) => zeroPivotRange(ctx.knMin, ctx.knMax, 0),
   },
   kg: {
     label: "Geodesic curvature κg",
     unit: "1/m",
     signed: true,
+    curvature: true,
     value: (y, i) => y.kg[i],
-    full: (ctx) => signedRange(-ctx.kAbsMax, ctx.kAbsMax),
+    full: (ctx) => zeroPivotRange(-ctx.kAbsMax, ctx.kAbsMax, 0),
   },
   pressure: {
     label: "Contact pressure p = T κn",
@@ -99,6 +108,25 @@ export function signedRange(lo, hi) {
 }
 
 /**
+ * Curvature-map range (geo-framework convention): min = min(lo, 0), mid = 0, max = max(hi, 0), where
+ * a side that occurs is at least `floor` wide. If neither side occurs (all values 0) the range is
+ * ±floor (±1 if floor is 0), so everything is drawn green.
+ * @param {number} lo @param {number} hi @param {number} floor ≥ 0 @returns {Range}
+ */
+export function zeroPivotRange(lo, hi, floor) {
+  const min = lo < 0 ? Math.min(lo, -floor) : 0;
+  const max = hi > 0 ? Math.max(hi, floor) : 0;
+  if (min === 0 && max === 0) {
+    const f = floor > 0 ? floor : 1;
+    return { min: -f, mid: 0, max: f };
+  }
+  return { min, mid: 0, max };
+}
+
+/** Largest magnitude of a range. */
+const magnitude = (r) => Math.max(Math.abs(r.min), Math.abs(r.max));
+
+/**
  * Effective range of a yarn colouring.
  * @param {keyof YARN_SCALES} key
  * @param {ScaleSpec} spec
@@ -111,6 +139,7 @@ export function yarnRange(key, spec, data, ctx) {
   const full = def.full(ctx);
   if (spec.mode === "custom") return { min: spec.min, mid: spec.mid, max: spec.max };
   if (spec.mode !== "data" || !(data.max >= data.min)) return full;
+  if (def.curvature) return zeroPivotRange(data.min, data.max, 0.02 * magnitude(full));
   let lo = data.min, hi = data.max;
   if (def.cap !== undefined) {
     hi = Math.min(hi, def.cap);
@@ -129,15 +158,13 @@ export function yarnRange(key, spec, data, ctx) {
 }
 
 /**
- * Effective range of a mandrel colouring (diverging, neutral at mid).
+ * Effective range of a mandrel colouring (curvature map, green at mid).
  * @param {ScaleSpec} spec @param {{min:number, max:number}} values over the mandrel
  * @returns {Range}
  */
 export function mandrelRange(spec, values) {
   if (spec.mode === "custom") return { min: spec.min, mid: spec.mid, max: spec.max };
-  const m = Math.max(Math.abs(values.min), Math.abs(values.max));
-  const M = m > 0 ? m : 1;
-  return { min: -M, mid: 0, max: M };
+  return zeroPivotRange(values.min, values.max, 0.02 * magnitude(values));
 }
 
 /** A "nice" slider step (1, 2 or 5 × 10^k) of about span / 200. */
@@ -167,26 +194,34 @@ export function sliderBounds(full, current) {
 export const snap = (v, step) => Number((Math.round(v / step) * step).toPrecision(12));
 
 /**
- * Keeps lo ≤ min < mid < max ≤ hi (at least one step apart) after bound `moved` changed; the
- * other bounds give way. Returns a new spec.
+ * Keeps the custom bounds ordered after bound `moved` changed; the other bounds give way. Returns a
+ * new spec, snapped to the slider grid.
+ *  - strictMid = true  (sequential scales): lo ≤ min < mid < max ≤ hi, one step apart;
+ *  - strictMid = false (curvature maps):    lo ≤ min ≤ mid ≤ max ≤ hi with max − min ≥ one step, so
+ *    mid (the green) may coincide with an end — e.g. min = mid = 0 for a one-signed curvature.
  * @param {{min:number, mid:number, max:number}} s @param {"min"|"mid"|"max"} moved
- * @param {{lo:number, hi:number, step:number}} b
+ * @param {{lo:number, hi:number, step:number}} b @param {boolean} [strictMid=true]
  */
-export function orderBounds(s, moved, b) {
-  const g = b.step, c = (v) => Math.min(b.hi, Math.max(b.lo, v));
+export function orderBounds(s, moved, b, strictMid = true) {
+  const g = b.step, gm = strictMid ? g : 0, c = (v) => Math.min(b.hi, Math.max(b.lo, v));
   let { min, mid, max } = { min: c(s.min), mid: c(s.mid), max: c(s.max) };
   if (moved === "min") {
-    min = Math.min(min, b.hi - 2 * g);
-    mid = Math.min(Math.max(mid, min + g), b.hi - g);
-    max = Math.max(max, mid + g);
+    min = Math.min(min, b.hi - Math.max(2 * gm, g));
+    mid = Math.min(Math.max(mid, min + gm), b.hi - gm);
+    max = Math.max(max, mid + gm, min + g);
   } else if (moved === "max") {
-    max = Math.max(max, b.lo + 2 * g);
-    mid = Math.max(Math.min(mid, max - g), b.lo + g);
-    min = Math.min(min, mid - g);
+    max = Math.max(max, b.lo + Math.max(2 * gm, g));
+    mid = Math.max(Math.min(mid, max - gm), b.lo + gm);
+    min = Math.min(min, mid - gm, max - g);
   } else {
-    mid = Math.min(Math.max(mid, b.lo + g), b.hi - g);
-    min = Math.min(min, mid - g);
-    max = Math.max(max, mid + g);
+    mid = Math.min(Math.max(mid, b.lo + gm), b.hi - gm);
+    min = Math.min(min, mid - gm);
+    max = Math.max(max, mid + gm);
+    if (max - min < g) {
+      // Only possible when mid may touch the ends: open the range on the side that has room.
+      if (min + g <= b.hi) max = min + g;
+      else min = max - g;
+    }
   }
   return { ...s, min: snap(min, g), mid: snap(mid, g), max: snap(max, g) };
 }

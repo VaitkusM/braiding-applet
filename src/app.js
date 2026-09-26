@@ -286,6 +286,7 @@ export class App {
           },
           "mid",
           b,
+          !info.zeroPivot,
         );
       }
     } else {
@@ -293,6 +294,7 @@ export class App {
         { ...store[key], mode: "custom", min: ui.min, mid: ui.mid, max: ui.max },
         what,
         b,
+        !info.zeroPivot,
       );
     }
     store[key] = spec;

@@ -4,13 +4,14 @@
  * with the mandrel.
  *
  * Colour modes: "metal" (reflective), "flat" (matte, one user-chosen colour: no metallic highlights,
- * so coloured yarns read evenly against it), "K" / "H" (Gaussian / mean curvature on the diverging
- * blue–gray–red scale; range "auto" = ±max |value| on this mandrel, or custom min / mid / max with
- * mid at the neutral colour — see scales.js).
+ * so coloured yarns read evenly against it), "K" / "H" (Gaussian / mean curvature map, blue–green–
+ * red as in geo-framework: green = 0, each sign scaled separately; range "auto" = the values on
+ * this mandrel, or custom min / mid / max with mid at the green — see scales.js). Curvature maps
+ * are drawn without tone mapping so that their hues are exact.
  */
 
 import * as THREE from "three";
-import { diverging, pivotScale, srgbToLinear } from "./colormaps.js";
+import { curvatureMap, pivotScale, srgbToLinear } from "./colormaps.js";
 import { mandrelRange, sliderBounds } from "./scales.js";
 
 /** Mandrel colour modes. */
@@ -93,6 +94,7 @@ export class MandrelView {
       vertexColors: true,
       metalness: 0.05,
       roughness: 0.6,
+      toneMapped: false, // exact curvature-map hues
     });
     this.flat = new THREE.MeshStandardMaterial({
       color: opts.flatColor ?? DEFAULT_FLAT_COLOR,
@@ -169,16 +171,17 @@ export class MandrelView {
       full: auto,
       bounds: sliderBounds(auto, range),
       unit: CURVATURE[key].unit,
+      zeroPivot: true, // green at 0; custom mid may coincide with an end
     };
   }
 
-  /** Paints K or H with the diverging scale: t = pivot(v; min, mid, max), colour = div(2t − 1). */
+  /** Paints K or H with the curvature map: colour = curvatureMap(pivot(v; min, mid, max)). */
   paint() {
     const key = this.mode, data = key === "K" ? this.K : this.H;
     const R = mandrelRange(this.scales[key], this.values[key]);
     const col = this.geometry.getAttribute("color");
     for (let i = 0; i < data.length; i++) {
-      const c = diverging(2 * pivotScale(data[i], R.min, R.mid, R.max) - 1).map(srgbToLinear);
+      const c = curvatureMap(pivotScale(data[i], R.min, R.mid, R.max)).map(srgbToLinear);
       col.setXYZ(i, c[0], c[1], c[2]);
     }
     col.needsUpdate = true;
@@ -187,7 +190,7 @@ export class MandrelView {
     this.legend = {
       title: `${CURVATURE[key].label} · ${what}`,
       unit: CURVATURE[key].unit,
-      kind: "diverging",
+      kind: "curvature",
       min: R.min,
       mid: R.mid,
       max: R.max,

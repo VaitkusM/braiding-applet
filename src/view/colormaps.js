@@ -11,8 +11,13 @@
  *    point of the ramp, 90 % of the mandrel area differs by ΔE ≥ 24 (the previous light-blue ramp
  *    fell to ΔE 4). The analogous hue shift (a permitted multi-hue sequential exception) avoids the
  *    orange / aqua / yellow / red that already mean "+" family, "−" family, geodesic and status;
- *  - polarity (diverging): blue ↔ red around a neutral gray midpoint, interpolated in OKLab so
- *    that lightness changes monotonically along each arm;
+ *  - curvature (curve and surface curvature maps: yarn κn, κg; mandrel K, H): the blue–green–red
+ *    map of geo-framework (P. Salvi, github.com/salvipeter/geo-framework, visualization.cc), a
+ *    linear HSV hue sweep at full saturation and value — blue (240°) for the most negative value,
+ *    green (120°) for zero, red (0°) for the most positive, each sign scaled separately. It is the
+ *    convention of that geometry-processing framework (requested for this app); being hue based it
+ *    is not colour-vision-deficiency safe, so every map comes with a labelled colour bar. These
+ *    colours are rendered without tone mapping so that the hues stay exact;
  *  - state (status): fixed good / warning / serious / critical colours, always shown with a label.
  * Colours are returned as sRGB triples in [0, 1]; the 3D view converts them to linear RGB.
  */
@@ -51,9 +56,6 @@ export const STATUS = Object.freeze({
  * gamut limit (7 stops, interpolated in OKLab). See the header for how it was chosen.
  */
 const SEQ = ["#2111bd", "#4815d1", "#6c18e1", "#911bec", "#b61eef", "#dc21ed", "#fb3edf"];
-
-/** Diverging poles and neutral midpoint. */
-const DIV_NEG = "#2a78d6", DIV_MID = "#c9c8c2", DIV_POS = "#e34948";
 
 /** "#rrggbb" → sRGB triple in [0, 1]. */
 export function hexToRgb(hex) {
@@ -133,20 +135,48 @@ export function pivotScale(v, min, mid, max) {
 /** Sequential scale: t ∈ [0, 1] → sRGB (dark indigo → light magenta). */
 export const sequential = (t) => sampleRamp(SEQ, t);
 
-/** Diverging scale: t ∈ [−1, 1] → sRGB (blue ← gray → red). */
-export function diverging(t) {
-  if (!Number.isFinite(t)) return hexToRgb("#898781");
-  const u = Math.min(1, Math.max(-1, t));
-  return u < 0 ? mixOklab(DIV_MID, DIV_NEG, -u) : mixOklab(DIV_MID, DIV_POS, u);
+/**
+ * HSV → RGB (all components in [0, 1], hue in degrees), exactly as HSV2RGB in geo-framework's
+ * visualization.cc ("as in Wikipedia").
+ * @param {number} h hue [°] @param {number} sat saturation @param {number} val value
+ * @returns {[number, number, number]} sRGB
+ */
+export function hsvToRgb(h, sat, val) {
+  const c = val * sat, hh = h / 60;
+  const x = c * (1 - Math.abs((hh % 2) - 1)), m = val - c;
+  let rgb;
+  if (hh <= 1) rgb = [c, x, 0];
+  else if (hh <= 2) rgb = [x, c, 0];
+  else if (hh <= 3) rgb = [0, c, x];
+  else if (hh <= 4) rgb = [0, x, c];
+  else if (hh <= 5) rgb = [x, 0, c];
+  else if (hh <= 6) rgb = [c, 0, x];
+  else rgb = [0, 0, 0];
+  return [rgb[0] + m, rgb[1] + m, rgb[2] + m];
 }
 
-/** CSS linear-gradient for a colour bar of the given scale kind. */
-export function rampCss(kind) {
-  const n = 12, stops = [];
+/**
+ * Curvature map (geo-framework): t ∈ [0, 1] → hue 240° (blue, t = 0) → 120° (green, t = ½) →
+ * 0° (red, t = 1), full saturation and value. With t = pivotScale(v, min, 0, max) this reproduces
+ * geo-framework's colorMap(min, max, v): hue = green + (blue − green)·min(v/min, 1) for v < 0 and
+ * green + (red − green)·min(v/max, 1) for v ≥ 0.
+ * @param {number} t @returns {[number, number, number]} sRGB
+ */
+export function curvatureMap(t) {
+  if (!Number.isFinite(t)) return hexToRgb("#898781");
+  return hsvToRgb(240 * (1 - Math.min(1, Math.max(0, t))), 1, 1);
+}
+
+/**
+ * CSS linear-gradient for a colour bar showing the part [t0, t1] of a ramp.
+ * @param {"sequential"|"curvature"} kind @param {number} [t0=0] @param {number} [t1=1]
+ */
+export function rampCss(kind, t0 = 0, t1 = 1) {
+  const n = 24, stops = [];
   for (let i = 0; i <= n; i++) {
-    const t = i / n;
-    const c = kind === "diverging" ? diverging(2 * t - 1) : sequential(t);
-    stops.push(`${rgbToHex(c)} ${(t * 100).toFixed(1)}%`);
+    const t = t0 + ((t1 - t0) * i) / n;
+    const c = kind === "curvature" ? curvatureMap(t) : sequential(t);
+    stops.push(`${rgbToHex(c)} ${((i / n) * 100).toFixed(1)}%`);
   }
   return `linear-gradient(90deg, ${stops.join(", ")})`;
 }

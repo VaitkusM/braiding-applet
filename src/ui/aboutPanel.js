@@ -54,7 +54,7 @@ export class AboutPanel {
         "Parameters (top right): the machine, the mandrel shape and placement, and the yarn properties. Changing one restarts the run.",
         "Mouse: drag to orbit, scroll to zoom, right-drag to pan. The camera buttons (top left) jump to preset views.",
         "Click a carrier or a deposited yarn to select it. Plots and live values then refer to that yarn, and its Darboux frame (t, n, b) and geodesic appear at its fell point.",
-        "Display (parameter panel): draw the laid yarns as lines (like the free yarns) or as flat tapes, and colour them by braid angle, slip ratio, curvatures or contact pressure. Each colour scale spans the range of the current run by default and can be switched to a custom min / mid / max range or to the full range. The mandrel can be metal, a flat matte colour of your choice, or coloured by Gaussian or mean curvature (automatic or custom range).",
+        "Display (parameter panel): draw the laid yarns as lines (like the free yarns) or as flat tapes, and colour them by braid angle, slip ratio, curvatures or contact pressure. Each colour scale spans the range of the current run by default and can be switched to a custom min / mid / max range or to the full range. The mandrel can be metal, a flat matte colour of your choice, or coloured by Gaussian or mean curvature (automatic or custom range). Curvature maps (κn and κg on the yarns, K and H on the mandrel) use the blue–green–red convention of geo-framework: green is zero, blue negative, red positive.",
         "Space plays or pauses, R restarts. “Run to end” computes the rest of the run as fast as possible.",
         "The URL always contains all parameters: copy it to share a set-up.",
       ]
