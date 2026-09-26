@@ -48,6 +48,8 @@ jobs:
           for d in src styles assets; do
             if [ -d "$d" ]; then cp -r "$d" _site/; fi
           done
+          # Figures shown in the in-app Theory tab (same files as in docs/THEORY.md).
+          mkdir -p _site/docs && cp -r docs/figures _site/docs/
           touch _site/.nojekyll
           find _site -type f | sort
       - uses: actions/upload-pages-artifact@v5

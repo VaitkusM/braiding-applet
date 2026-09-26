@@ -10,7 +10,7 @@
  * the undulation height t_y·(c + a·σ̃(s)), where σ̃ is the smoothed over/under side from
  * crossings.js; at every crossing the two yarns get opposite σ̃ = ±1, so the upper one is drawn on
  * top (lines: by depth; tapes: they never interpenetrate there). Near side changes of dense, nearly
- * jammed braids some clipping of flat tapes is unavoidable (docs/THEORY.md §10).
+ * jammed braids some clipping of flat tapes is unavoidable (docs/THEORY.md §8.3).
  *
  * Buffers are preallocated and grown by doubling; per frame only new/changed rings are written
  * (addUpdateRange) and the drawn range is extended. The newest ring (the "tail", at the current fell

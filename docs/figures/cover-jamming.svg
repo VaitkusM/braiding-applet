@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="330" viewBox="0 0 760 330" role="img" aria-labelledby="t d">
+<title id="t">Cover factor and jamming</title>
+<desc id="d">Left: a patch of the unrolled braid at α = 40° (two families of flat strips of width w, perpendicular spacing d = 4πr cos α / N). Right: cover factor versus braid angle for the app's defaults (N = 32, w = 5 mm, r = 30 mm) with the jamming angle.</desc>
+<rect x="0.5" y="0.5" width="759" height="329" rx="8" fill="#ffffff" stroke="#d0d7de" stroke-width="1.5"/>
+<clipPath id="clip-cover"><rect x="30" y="50" width="290" height="240"/></clipPath>
+<g clip-path="url(#clip-cover)">
+<rect x="30" y="50" width="290" height="240" fill="#f6f8fa"/>
+<polygon points="-643.92,553.98 410.94,-703.15 426.65,-689.97 -628.2,567.16" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-615.55,577.78 439.3,-679.35 455.02,-666.17 -599.84,590.96" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-587.19,601.58 467.67,-655.55 483.38,-642.37 -571.48,614.76" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-558.83,625.37 496.03,-631.75 511.74,-618.57 -543.11,638.56" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-530.46,649.17 524.39,-607.95 540.11,-594.77 -514.75,662.36" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-502.1,672.97 552.76,-584.15 568.47,-570.97 -486.39,686.16" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-473.74,696.77 581.12,-560.36 596.83,-547.17 -458.02,709.96" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-445.37,720.57 609.48,-536.56 625.2,-523.37 -429.66,733.76" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-417.01,744.37 637.84,-512.76 653.56,-499.57 -401.3,757.56" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-388.65,768.17 666.21,-488.96 681.92,-475.77 -372.93,781.36" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-360.28,791.97 694.57,-465.16 710.28,-451.97 -344.57,805.16" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-331.92,815.77 722.93,-441.36 738.65,-428.17 -316.21,828.96" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-303.56,839.57 751.3,-417.56 767.01,-404.37 -287.84,852.76" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-275.2,863.37 779.66,-393.76 795.37,-380.57 -259.48,876.56" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-246.83,887.17 808.02,-369.96 823.74,-356.77 -231.12,900.36" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-218.47,910.97 836.39,-346.16 852.1,-332.97 -202.76,924.15" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-190.11,934.77 864.75,-322.36 880.46,-309.17 -174.39,947.95" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-161.74,958.57 893.11,-298.56 908.83,-285.37 -146.03,971.75" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-133.38,982.37 921.48,-274.76 937.19,-261.58 -117.67,995.55" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-105.02,1006.17 949.84,-250.96 965.55,-237.78 -89.3,1019.35" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="-76.65,1029.97 978.2,-227.16 993.92,-213.98 -60.94,1043.15" fill="#d95926" fill-opacity="0.45"/>
+<polygon points="410.94,1043.15 -643.92,-213.98 -628.2,-227.16 426.65,1029.97" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="439.3,1019.35 -615.55,-237.78 -599.84,-250.96 455.02,1006.17" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="467.67,995.55 -587.19,-261.58 -571.48,-274.76 483.38,982.37" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="496.03,971.75 -558.83,-285.37 -543.11,-298.56 511.74,958.57" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="524.39,947.95 -530.46,-309.17 -514.75,-322.36 540.11,934.77" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="552.76,924.15 -502.1,-332.97 -486.39,-346.16 568.47,910.97" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="581.12,900.36 -473.74,-356.77 -458.02,-369.96 596.83,887.17" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="609.48,876.56 -445.37,-380.57 -429.66,-393.76 625.2,863.37" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="637.84,852.76 -417.01,-404.37 -401.3,-417.56 653.56,839.57" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="666.21,828.96 -388.65,-428.17 -372.93,-441.36 681.92,815.77" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="694.57,805.16 -360.28,-451.97 -344.57,-465.16 710.28,791.97" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="722.93,781.36 -331.92,-475.77 -316.21,-488.96 738.65,768.17" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="751.3,757.56 -303.56,-499.57 -287.84,-512.76 767.01,744.37" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="779.66,733.76 -275.2,-523.37 -259.48,-536.56 795.37,720.57" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="808.02,709.96 -246.83,-547.17 -231.12,-560.36 823.74,696.77" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="836.39,686.16 -218.47,-570.97 -202.76,-584.15 852.1,672.97" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="864.75,662.36 -190.11,-594.77 -174.39,-607.95 880.46,649.17" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="893.11,638.56 -161.74,-618.57 -146.03,-631.75 908.83,625.37" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="921.48,614.76 -133.38,-642.37 -117.67,-655.55 937.19,601.58" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="949.84,590.96 -105.02,-666.17 -89.3,-679.35 965.55,577.78" fill="#199e70" fill-opacity="0.45"/>
+<polygon points="978.2,567.16 -76.65,-689.97 -60.94,-703.15 993.92,553.98" fill="#199e70" fill-opacity="0.45"/>
+</g>
+<rect x="30" y="50" width="290" height="240" fill="none" stroke="#8c959f" stroke-width="1"/>
+<line x1="189.18" y1="181.9" x2="179.6" y2="173.86" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="175,170 181.33,171.79 177.86,175.93" fill="#1f2328"/>
+<line x1="189.18" y1="181.9" x2="198.77" y2="189.94" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="203.36,193.8 197.03,192.01 200.5,187.87" fill="#1f2328"/>
+<text x="199.18" y="173.9" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round"><tspan font-style="italic">d</tspan></text>
+<text x="199.18" y="173.9" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#1f2328"><tspan font-style="italic">d</tspan></text>
+<line x1="146.64" y1="146.2" x2="149.9" y2="148.94" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="154.49,152.79 148.16,151 151.63,146.87" fill="#1f2328"/>
+<line x1="146.64" y1="146.2" x2="143.38" y2="143.46" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round"/>
+<polygon points="138.78,139.61 145.11,141.4 141.64,145.53" fill="#1f2328"/>
+<text x="144.64" y="136.2" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round"><tspan font-style="italic">w</tspan></text>
+<text x="144.64" y="136.2" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#1f2328"><tspan font-style="italic">w</tspan></text>
+<line x1="175" y1="170" x2="175" y2="100" fill="none" stroke="#1f2328" stroke-width="1" stroke-dasharray="3 3" stroke-linecap="round"/>
+<polyline points="203.28,136.29 201.57,134.93 199.79,133.65 197.94,132.46 196.04,131.36 194.09,130.36 192.09,129.46 190.05,128.65 187.97,127.95 185.86,127.36 183.72,126.87 181.56,126.49 179.38,126.22 177.19,126.05 175,126" fill="none" stroke="#1f2328" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="193.47" y="123.26" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">α</text>
+<text x="193.47" y="123.26" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" font-weight="600" fill="#1f2328">α</text>
+<line x1="334" y1="290" x2="334" y2="253" fill="none" stroke="#1f2328" stroke-width="1.2" stroke-linecap="round"/>
+<polygon points="334,246 337.15,253 330.85,253" fill="#1f2328"/>
+<text x="334" y="240" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round"><tspan font-style="italic">z</tspan></text>
+<text x="334" y="240" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f2328"><tspan font-style="italic">z</tspan></text>
+<text x="30" y="34" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">α = 40°: <tspan font-style="italic">d</tspan> = 9.02 mm, <tspan font-style="italic">k</tspan> = <tspan font-style="italic">w</tspan>/<tspan font-style="italic">d</tspan> = 0.55, CF = 0.80</text>
+<text x="30" y="34" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#1f2328">α = 40°: <tspan font-style="italic">d</tspan> = 9.02 mm, <tspan font-style="italic">k</tspan> = <tspan font-style="italic">w</tspan>/<tspan font-style="italic">d</tspan> = 0.55, CF = 0.80</text>
+<line x1="400" y1="280" x2="730" y2="280" fill="none" stroke="#eaeef2" stroke-width="1" stroke-linecap="butt"/>
+<text x="394" y="284" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#57606a">0</text>
+<line x1="400" y1="225.24" x2="730" y2="225.24" fill="none" stroke="#eaeef2" stroke-width="1" stroke-linecap="butt"/>
+<text x="394" y="229.24" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#57606a">0.25</text>
+<line x1="400" y1="170.48" x2="730" y2="170.48" fill="none" stroke="#eaeef2" stroke-width="1" stroke-linecap="butt"/>
+<text x="394" y="174.48" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#57606a">0.5</text>
+<line x1="400" y1="115.71" x2="730" y2="115.71" fill="none" stroke="#eaeef2" stroke-width="1" stroke-linecap="butt"/>
+<text x="394" y="119.71" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#57606a">0.75</text>
+<line x1="400" y1="60.95" x2="730" y2="60.95" fill="none" stroke="#eaeef2" stroke-width="1" stroke-linecap="butt"/>
+<text x="394" y="64.95" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#57606a">1</text>
+<line x1="400" y1="280" x2="400" y2="284" fill="none" stroke="#8c959f" stroke-width="1" stroke-linecap="round"/>
+<text x="400" y="297" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#57606a">0</text>
+<line x1="510" y1="280" x2="510" y2="284" fill="none" stroke="#8c959f" stroke-width="1" stroke-linecap="round"/>
+<text x="510" y="297" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#57606a">30</text>
+<line x1="620" y1="280" x2="620" y2="284" fill="none" stroke="#8c959f" stroke-width="1" stroke-linecap="round"/>
+<text x="620" y="297" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#57606a">60</text>
+<line x1="730" y1="280" x2="730" y2="284" fill="none" stroke="#8c959f" stroke-width="1" stroke-linecap="round"/>
+<text x="730" y="297" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#57606a">90</text>
+<line x1="400" y1="280" x2="730" y2="280" fill="none" stroke="#8c959f" stroke-width="1" stroke-linecap="butt"/>
+<text x="730" y="312" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">braid angle α [°]</text>
+<text x="730" y="312" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#57606a">braid angle α [°]</text>
+<text x="400" y="42" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">cover factor CF</text>
+<text x="400" y="42" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#57606a">cover factor CF</text>
+<line x1="400" y1="100.38" x2="730" y2="100.38" fill="none" stroke="#57606a" stroke-width="1" stroke-dasharray="5 4" stroke-linecap="round"/>
+<text x="407.33" y="94.38" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">round yarns jam near CF ≈ 0.82</text>
+<text x="407.33" y="94.38" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#57606a">round yarns jam near CF ≈ 0.82</text>
+<polyline points="400,133.52 401.83,133.52 403.67,133.51 405.5,133.49 407.33,133.46 409.17,133.42 411,133.38 412.83,133.32 414.67,133.26 416.5,133.19 418.33,133.11 420.17,133.03 422,132.93 423.83,132.83 425.67,132.72 427.5,132.6 429.33,132.47 431.17,132.34 433,132.2 434.83,132.04 436.67,131.88 438.5,131.71 440.33,131.53 442.17,131.35 444,131.15 445.83,130.95 447.67,130.74 449.5,130.51 451.33,130.28 453.17,130.04 455,129.8 456.83,129.54 458.67,129.27 460.5,129 462.33,128.72 464.17,128.42 466,128.12 467.83,127.81 469.67,127.49 471.5,127.16 473.33,126.82 475.17,126.47 477,126.11 478.83,125.74 480.67,125.36 482.5,124.97 484.33,124.57 486.17,124.17 488,123.75 489.83,123.32 491.67,122.88 493.5,122.43 495.33,121.97 497.17,121.5 499,121.02 500.83,120.53 502.67,120.03 504.5,119.52 506.33,118.99 508.17,118.46 510,117.91 511.83,117.35 513.67,116.79 515.5,116.21 517.33,115.61 519.17,115.01 521,114.4 522.83,113.77 524.67,113.13 526.5,112.48 528.33,111.82 530.17,111.14 532,110.46 533.83,109.76 535.67,109.05 537.5,108.32 539.33,107.59 541.17,106.84 543,106.08 544.83,105.3 546.67,104.52 548.5,103.72 550.33,102.91 552.17,102.08 554,101.25 555.83,100.4 557.67,99.54 559.5,98.66 561.33,97.77 563.17,96.87 565,95.96 566.83,95.04 568.67,94.1 570.5,93.16 572.33,92.2 574.17,91.23 576,90.25 577.83,89.26 579.67,88.26 581.5,87.25 583.33,86.23 585.17,85.21 587,84.17 588.83,83.14 590.67,82.09 592.5,81.04 594.33,79.99 596.17,78.93 598,77.87 599.83,76.82 601.67,75.77 603.5,74.72 605.33,73.68 607.17,72.65 609,71.63 610.83,70.62 612.67,69.64 614.5,68.67 616.33,67.73 618.17,66.83 620,65.96 621.83,65.13 623.67,64.35 625.5,63.63 627.33,62.97 629.17,62.38 631,61.88 632.83,61.47 634.67,61.17 636.5,61 638.33,60.95 640.17,60.95 642,60.95 643.83,60.95 645.67,60.95 647.5,60.95 649.33,60.95 651.17,60.95 653,60.95 654.83,60.95 656.67,60.95 658.5,60.95 660.33,60.95 662.17,60.95 664,60.95 665.83,60.95 667.67,60.95 669.5,60.95 671.33,60.95 673.17,60.95 675,60.95 676.83,60.95 678.67,60.95 680.5,60.95 682.33,60.95 684.17,60.95 686,60.95 687.83,60.95 689.67,60.95 691.5,60.95 693.33,60.95 695.17,60.95 697,60.95 698.83,60.95 700.67,60.95 702.5,60.95 704.33,60.95 706.17,60.95 708,60.95 709.83,60.95 711.67,60.95 713.5,60.95 715.33,60.95 717.17,60.95 719,60.95 720.83,60.95 722.67,60.95 724.5,60.95 726.33,60.95 728.17,60.95" fill="none" stroke="#1f2328" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="637.92" y1="280" x2="637.92" y2="60.95" fill="none" stroke="#d03b3b" stroke-width="1.2" stroke-dasharray="4 3" stroke-linecap="round"/>
+<text x="631.92" y="253.71" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">α<tspan dy="3.6" font-size="9">jam</tspan><tspan dy="-3.6"> = 64.9° (<tspan font-style="italic">k</tspan> = 1)</tspan></text>
+<text x="631.92" y="253.71" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#1f2328">α<tspan dy="3.6" font-size="9">jam</tspan><tspan dy="-3.6"> = 64.9° (<tspan font-style="italic">k</tspan> = 1)</tspan></text>
+</svg>

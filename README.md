@@ -61,6 +61,7 @@ The tooling uses [Deno](https://deno.com) 2.6. There is no Node.
 deno task check            # lint + format check + unit tests (as in CI)
 deno task test             # unit tests of the physics core
 deno task smoke            # headless-Chrome end-to-end test + screenshots (needs `deno task serve`)
+deno task figures          # regenerate the documentation figures (docs/figures/)
 ```
 
 The physics core (`src/core/`) is pure JavaScript and is tested against:
@@ -74,8 +75,8 @@ Every push to `main` runs these checks and deploys the site to GitHub Pages.
 
 ## Documentation
 
-- [`docs/THEORY.md`](docs/THEORY.md): model, derivations, conventions, validation, limitations,
-  references.
+- [`docs/THEORY.md`](docs/THEORY.md): the model explained step by step, with computed figures:
+  conventions, derivations, validation, limitations, references.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): module map, data flow, how to extend.
 - [`AGENTS.md`](AGENTS.md): conventions and invariants for contributors and AI agents.
 - [`docs/PLAN.md`](docs/PLAN.md): the original implementation plan.

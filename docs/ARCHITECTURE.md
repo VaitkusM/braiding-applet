@@ -30,7 +30,7 @@ A parameter change always creates a new `Simulation`: one run is one parameter s
 - **Mandrel frame**: `MandrelView.group` gets the pose matrix every frame. Yarns and overlays are
   children of that group, so they are built once in mandrel coordinates and move with the mandrel.
 
-See `docs/THEORY.md` §1 and §3.
+See `docs/THEORY.md` §1 and §2.3.
 
 ## Core modules (`src/core/`)
 
@@ -79,16 +79,16 @@ are exact rotated copies, written into `yarns` as they are deposited. Views don'
 
 ## UI modules (`src/ui/`)
 
-| Module                         | Responsibility                                                                                             |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| `controls.js`                  | lil-gui panel: machine, mandrel (+ shape sub-folder), yarn, display, numerics                              |
-| `plots.js`                     | `LinePlot`: canvas line chart with crosshair tooltip, bands, dashed references, table view, CSV/PNG export |
-| `plotPanel.js`                 | The charts of the Plots tab, and export buttons                                                            |
-| `theoryPanel.js`               | KaTeX formulas and live values at the selected fell point                                                  |
-| `profileEditor.js`             | Custom profile editor: drag, add and remove spline points; coloured by K                                   |
-| `statusBar.js` / `colorbar.js` | Top-bar read-outs and badges / colour legends of the 3D view                                               |
-| `export.js`                    | Yarn CSV, PNG download, share link                                                                         |
-| `aboutPanel.js`                | Usage notes and suggested experiments                                                                      |
+| Module                         | Responsibility                                                                                                                            |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `controls.js`                  | lil-gui panel: machine, mandrel (+ shape sub-folder), yarn, display, numerics                                                             |
+| `plots.js`                     | `LinePlot`: canvas line chart with crosshair tooltip, bands, dashed references, table view, CSV/PNG export                                |
+| `plotPanel.js`                 | The charts of the Plots tab, and export buttons                                                                                           |
+| `theoryPanel.js`               | Live values at the selected fell point; the model in words, KaTeX formulas and the figures of `docs/figures/`, following `docs/THEORY.md` |
+| `profileEditor.js`             | Custom profile editor: drag, add and remove spline points; coloured by K                                                                  |
+| `statusBar.js` / `colorbar.js` | Top-bar read-outs and badges / colour legends of the 3D view                                                                              |
+| `export.js`                    | Yarn CSV, PNG download, share link                                                                                                        |
+| `aboutPanel.js`                | Usage notes and suggested experiments                                                                                                     |
 
 ## Extending
 
@@ -116,10 +116,18 @@ are exact rotated copies, written into `yarns` as they are deposited. Views don'
 | `deno task check`                             | `deno lint` + `deno fmt --check` + tests (what CI runs)                                                                   |
 | `deno task serve`                             | Static server on http://127.0.0.1:8000/                                                                                   |
 | `deno task smoke`                             | Headless-Chrome end-to-end test with screenshots in `screenshots/` (uses the local Chrome; `--url` to test the live site) |
+| `deno task figures`                           | Regenerates the documentation figures `docs/figures/*.svg` with `tools/figures/make.js` (computed with the core)          |
 | `python3 tests/fixtures/generate_fixtures.py` | Regenerates the SciPy reference solution                                                                                  |
 
 **Deployment.** `.github/workflows/deploy.yml` runs lint, fmt and tests. It then copies
-`index.html`, `src/`, `styles/` and `assets/` into `_site/` and deploys that to GitHub Pages.
+`index.html`, `src/`, `styles/`, `assets/` and `docs/figures/` (shown in the Theory tab) into
+`_site/` and deploys that to GitHub Pages.
+
+**Figures.** `tools/figures/make.js` builds the figures of `docs/THEORY.md` from simulation runs and
+core functions; `tools/figures/svg.js` is a small deterministic SVG writer (white "paper" cards that
+read the same in light and dark themes). `tests/figures.test.js` fails when a committed figure is
+out of date, or when THEORY.md or the Theory tab misses one. After changing the core or a figure,
+run `deno task figures` and look at the result.
 
 **Pinned third-party modules** (import map in `index.html`), from jsDelivr:
 

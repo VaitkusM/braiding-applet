@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="500" viewBox="0 0 560 500" role="img" aria-labelledby="t d">
+<title id="t">Free yarns seen along the machine axis</title>
+<desc id="d">Computed projection of the reference case onto the ring plane: every free yarn is tangent to the mandrel circle, so its fell point F lags behind its guide point G by β = arccos(r/R_g); the free length in this projection is √(R_g² − r²).</desc>
+<rect x="0.5" y="0.5" width="559" height="499" rx="8" fill="#ffffff" stroke="#d0d7de" stroke-width="1.5"/>
+<circle cx="280" cy="260" r="202.5" fill="none" stroke="#9aa1a9" stroke-width="2"/>
+<circle cx="280" cy="260" r="54" fill="#e7e9ec" stroke="#8c959f" stroke-width="1"/>
+<circle cx="480.72" cy="286.8" r="3" fill="#d95926" opacity="1"/>
+<line x1="440.88" y1="137.02" x2="323.05" y2="292.6" fill="none" stroke="#d95926" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="440.88" cy="137.02" r="3" fill="#d95926" opacity="0.6"/>
+<line x1="306.8" y1="59.28" x2="333.49" y2="252.61" fill="none" stroke="#d95926" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="306.8" cy="59.28" r="3" fill="#d95926" opacity="0.6"/>
+<line x1="157.02" y1="99.12" x2="312.6" y2="216.95" fill="none" stroke="#d95926" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="157.02" cy="99.12" r="3" fill="#d95926" opacity="0.6"/>
+<line x1="79.28" y1="233.2" x2="272.61" y2="206.51" fill="none" stroke="#d95926" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="79.28" cy="233.2" r="3" fill="#d95926" opacity="0.6"/>
+<line x1="119.12" y1="382.98" x2="236.95" y2="227.4" fill="none" stroke="#d95926" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="119.12" cy="382.98" r="3" fill="#d95926" opacity="0.6"/>
+<line x1="253.2" y1="460.72" x2="226.51" y2="267.39" fill="none" stroke="#d95926" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="253.2" cy="460.72" r="3" fill="#d95926" opacity="0.6"/>
+<line x1="402.98" y1="420.88" x2="247.4" y2="303.05" fill="none" stroke="#d95926" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="402.98" cy="420.88" r="3" fill="#d95926" opacity="0.6"/>
+<line x1="455.18" y1="158.43" x2="266.35" y2="207.75" fill="none" stroke="#199e70" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="455.18" cy="158.43" r="3" fill="#199e70" opacity="0.6"/>
+<line x1="332.05" y1="64.3" x2="233.41" y2="232.71" fill="none" stroke="#199e70" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="332.05" cy="64.3" r="3" fill="#199e70" opacity="0.6"/>
+<line x1="178.43" y1="84.82" x2="227.75" y2="273.65" fill="none" stroke="#199e70" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="178.43" cy="84.82" r="3" fill="#199e70" opacity="0.6"/>
+<line x1="84.3" y1="207.95" x2="252.71" y2="306.59" fill="none" stroke="#199e70" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="84.3" cy="207.95" r="3" fill="#199e70" opacity="0.6"/>
+<line x1="104.82" y1="361.57" x2="293.65" y2="312.25" fill="none" stroke="#199e70" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="104.82" cy="361.57" r="3" fill="#199e70" opacity="0.6"/>
+<line x1="227.95" y1="455.7" x2="326.59" y2="287.29" fill="none" stroke="#199e70" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="227.95" cy="455.7" r="3" fill="#199e70" opacity="0.6"/>
+<line x1="381.57" y1="435.18" x2="332.25" y2="246.35" fill="none" stroke="#199e70" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="381.57" cy="435.18" r="3" fill="#199e70" opacity="0.6"/>
+<line x1="475.7" y1="312.05" x2="307.29" y2="213.41" fill="none" stroke="#199e70" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+<circle cx="475.7" cy="312.05" r="3" fill="#199e70" opacity="0.6"/>
+<line x1="280" y1="260" x2="480.72" y2="286.8" fill="none" stroke="#57606a" stroke-width="1" stroke-dasharray="4 3" stroke-linecap="round"/>
+<line x1="280" y1="260" x2="287.39" y2="313.49" fill="none" stroke="#57606a" stroke-width="1" stroke-dasharray="4 3" stroke-linecap="round"/>
+<line x1="480.72" y1="286.8" x2="287.39" y2="313.49" fill="none" stroke="#d95926" stroke-width="2.4" stroke-linecap="round"/>
+<polyline points="283.83,287.74 285.16,287.52 286.48,287.24 287.78,286.9 289.07,286.49 290.34,286.02 291.58,285.49 292.79,284.91 293.98,284.26 295.13,283.56 296.25,282.8 297.33,282 298.36,281.14 299.36,280.23 300.31,279.27 301.22,278.27 302.07,277.23 302.88,276.14 303.63,275.02 304.32,273.87 304.96,272.68 305.55,271.46 306.07,270.22 306.53,268.95 306.93,267.66 307.27,266.36 307.54,265.04 307.75,263.71" fill="none" stroke="#1f2328" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="308.35" y="292.22" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">β</text>
+<text x="308.35" y="292.22" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#1f2328">β</text>
+<polyline points="286.15,304.58 295.07,303.35 296.3,312.26" fill="none" stroke="#1f2328" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="287.39" cy="313.49" r="4" fill="#1f2328"/>
+<circle cx="480.72" cy="286.8" r="5" fill="#d95926"/>
+<text x="289.85" y="335.32" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round"><tspan font-style="italic">F</tspan></text>
+<text x="289.85" y="335.32" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#1f2328"><tspan font-style="italic">F</tspan></text>
+<text x="272.8" y="292.25" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round"><tspan font-style="italic">r</tspan></text>
+<text x="272.8" y="292.25" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#1f2328"><tspan font-style="italic">r</tspan></text>
+<text x="496.58" y="292.92" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round"><tspan font-style="italic">G</tspan></text>
+<text x="496.58" y="292.92" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#1f2328"><tspan font-style="italic">G</tspan></text>
+<text x="392.05" y="318.15" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">√(<tspan font-style="italic">R</tspan><tspan dy="3.6" font-size="9"><tspan font-style="italic">g</tspan></tspan><tspan dy="-3.6">² − <tspan font-style="italic">r</tspan>²)</tspan></text>
+<text x="392.05" y="318.15" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#1f2328">√(<tspan font-style="italic">R</tspan><tspan dy="3.6" font-size="9"><tspan font-style="italic">g</tspan></tspan><tspan dy="-3.6">² − <tspan font-style="italic">r</tspan>²)</tspan></text>
+<text x="425.8" y="413.9" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="start" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round"><tspan font-style="italic">R</tspan><tspan dy="3.9" font-size="9.75"><tspan font-style="italic">g</tspan></tspan></text>
+<text x="425.8" y="413.9" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" text-anchor="start" fill="#1f2328"><tspan font-style="italic">R</tspan><tspan dy="3.9" font-size="9.75"><tspan font-style="italic">g</tspan></tspan></text>
+<polyline points="196.89,51.45 187.5,55.44 178.3,59.85 169.32,64.68 160.55,69.91 152.04,75.54 143.79,81.54 135.82,87.92 128.15,94.64 120.8,101.71 113.77,109.11 107.08,116.82" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="111.55" y1="111.43" x2="111.55" y2="111.43" fill="none" stroke="#d95926" stroke-width="2" stroke-linecap="round"/>
+<polygon points="105.81,118.36 108.43,108.85 114.67,114.01" fill="#d95926"/>
+<text x="97.08" y="112.82" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">+ family, +ω</text>
+<text x="97.08" y="112.82" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#1f2328">+ family, +ω</text>
+<polyline points="361.35,50.76 371.71,55.08 381.83,59.92 391.7,65.26 401.3,71.09 410.59,77.39 419.55,84.14 428.17,91.34 436.41,98.95 444.26,106.97 451.71,115.37" fill="none" stroke="#199e70" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="447.2" y1="110.02" x2="447.2" y2="110.02" fill="none" stroke="#199e70" stroke-width="2" stroke-linecap="round"/>
+<polygon points="453,116.9 444.1,112.63 450.3,107.41" fill="#199e70"/>
+<text x="461.71" y="111.37" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">− family, −ω</text>
+<text x="461.71" y="111.37" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#1f2328">− family, −ω</text>
+<text x="18" y="24" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#ffffff" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">β = arccos(<tspan font-style="italic">r</tspan>/<tspan font-style="italic">R</tspan><tspan dy="3.6" font-size="9"><tspan font-style="italic">g</tspan></tspan><tspan dy="-3.6">) = 74.5°  (simulated: 74.5°)</tspan></text>
+<text x="18" y="24" font-family="system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#57606a">β = arccos(<tspan font-style="italic">r</tspan>/<tspan font-style="italic">R</tspan><tspan dy="3.6" font-size="9"><tspan font-style="italic">g</tspan></tspan><tspan dy="-3.6">) = 74.5°  (simulated: 74.5°)</tspan></text>
+</svg>

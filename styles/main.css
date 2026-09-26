@@ -611,6 +611,30 @@ table.data th {
   padding: 2px 0;
 }
 
+/* Figures (docs/figures/*.svg): light "paper" cards, readable on the dark panel. */
+.theory-fig {
+  margin: 10px 0 14px;
+}
+
+.theory-fig img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.theory-fig figcaption {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.theory-fig figcaption b {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
 .katex {
   font-size: 1.05em;
 }

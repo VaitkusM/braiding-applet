@@ -8,6 +8,7 @@
     "test": "deno test --allow-read tests/",
     "serve": "deno run --allow-net --allow-read --allow-sys jsr:@std/http@1/file-server --port 8000 --host 127.0.0.1 .",
     "smoke": "deno run --allow-all tools/smoke.js",
+    "figures": "deno run --allow-read --allow-write=docs/figures tools/figures/make.js",
     "check": "deno lint && deno fmt --check && deno task test"
   },
   "lint": {
@@ -23,7 +24,8 @@
     "proseWrap": "preserve",
     "exclude": [
       "tasks.md",
-      "docs/PLAN.md"
+      "docs/PLAN.md",
+      "docs/figures/"
     ]
   },
   "exclude": [
